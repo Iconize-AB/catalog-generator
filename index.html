@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CT FOOD Catalog Generator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/browser-image-compression@2.0.2/dist/browser-image-compression.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&family=Teko:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="src/css/styles.css">
+</head>
+<body>
+    <div id="app-wrapper" class="flex h-screen">
+        <!-- Control Panel -->
+        <div class="control-panel w-1/3">
+            <h1 class="text-2xl font-bold mb-6" data-lang-key="appTitle">CT FOOD Catalog Generator</h1>
+            
+            <!-- Language Selector -->
+            <div class="control-section">
+                <label for="language-selector" class="block text-sm font-medium mb-2" data-lang-key="languageLabel">Language</label>
+                <select id="language-selector" class="input-field">
+                    <option value="en">English</option>
+                    <option value="zh">中文</option>
+                    <option value="sv">Svenska</option>
+                </select>
+            </div>
+            
+            <!-- Step 1: Upload Excel -->
+                <div class="control-section">
+                <h2 data-lang-key="step1Title">Step 1: Upload Product Information</h2>
+                <p class="text-sm text-gray-600 mb-4" data-lang-key="step1Desc">Use the 'page' column to assign products to specific pages. The tool will automatically adjust the layout for 1-9 products per page.</p>
+                <label for="excelFile" class="file-upload-label">
+                    <span data-lang-key="chooseFile">Choose File</span>
+                    <input type="file" id="excelFile" accept=".xlsx,.xls" class="hidden">
+                        </label>
+                <span id="excelFileName" class="file-info" data-lang-key="noFileChosen">No file chosen</span>
+                <button id="downloadTemplateBtn" class="text-sm mt-2" data-lang-key="downloadTemplate">Download Template</button>
+                </div>
+
+            <!-- Step 2: Upload Images -->
+                <div class="control-section">
+                <h2 data-lang-key="step2Title">Step 2: Upload Product Pictures</h2>
+                <p class="text-sm text-gray-600 mb-4" data-lang-key="step2Desc">Image filename must match 'SKU'. Recommended size 800x800 pixels, max 2MB.</p>
+                <label for="imageFiles" class="file-upload-label">
+                    <span data-lang-key="chooseFiles">Choose Files</span>
+                    <input type="file" id="imageFiles" accept="image/*" multiple class="hidden">
+                        </label>
+                <span id="imageFilesName" class="file-info" data-lang-key="noFilesChosen">No files chosen</span>
+                </div>
+
+            <!-- Step 3: Configuration -->
+                <div class="control-section">
+                <h2 data-lang-key="step3Title">Step 3: Customize Configuration</h2>
+                
+                <!-- Tabs -->
+                <div class="mb-4">
+                    <div class="tab active" data-tab="promotion" data-lang-key="promoTab">Promotion</div>
+                    <div class="tab" data-tab="new-arrivals" data-lang-key="newArrivalsTab">New Arrivals</div>
+                        </div>
+                        
+                <!-- Promotion Tab -->
+                <div id="promotion-content" class="tab-content active">
+                    <div class="mb-4">
+                        <label for="promoTime" class="block text-sm font-medium mb-2" data-lang-key="promoDatePlaceholder">Promotion Date</label>
+                        <input type="text" id="promoTime" class="input-field" placeholder="September 2013" value="September 2013">
+                        </div>
+                    <div class="mb-4">
+                        <label for="promoText" class="block text-sm font-medium mb-2" data-lang-key="promoTitlePlaceholder">Promotion Title</label>
+                        <input type="text" id="promoText" class="input-field" placeholder="Kampanj" value="Erbjudanden">
+                        </div>
+                </div>
+
+                <!-- New Arrivals Tab -->
+                <div id="new-arrivals-content" class="tab-content">
+                    <div class="mb-4">
+                        <label for="newArrivalsText" class="block text-sm font-medium mb-2" data-lang-key="newArrivalsTitlePlaceholder">New Arrivals Title</label>
+                        <input type="text" id="newArrivalsText" class="input-field" placeholder="NYHETER" value="NYHETER">
+                    </div>
+                </div>
+
+                <!-- Footer Text -->
+                <div class="mb-4">
+                    <label for="footerText" class="block text-sm font-medium mb-2" data-lang-key="footerTitle">Custom Footer Text</label>
+                    <div class="rich-text-editor border border-gray-300 rounded">
+                    <div class="toolbar">
+                            <button type="button" class="toolbar-btn" data-command="bold">B</button>
+                            <button type="button" class="toolbar-btn" data-command="italic">I</button>
+                            <button type="button" class="toolbar-btn" data-command="underline">U</button>
+                            <select class="toolbar-select" id="fontNameSelect">
+                                <option value="Arial">Arial</option>
+                                <option value="Times New Roman">Times</option>
+                                <option value="Courier New">Courier</option>
+                        </select>
+                            <select class="toolbar-select" id="fontSizeSelect">
+                                <option value="1">8px</option>
+                                <option value="2">10px</option>
+                                <option value="3">12px</option>
+                                <option value="4">14px</option>
+                                <option value="5">18px</option>
+                                <option value="6">24px</option>
+                                <option value="7">36px</option>
+                        </select>
+                            <input type="color" class="toolbar-color" id="fontColorPicker" value="#000000">
+                    </div>
+                        <div id="footerText" contenteditable="true" class="p-2 min-h-20">
+                            Med reservation för slutförsäljning och tryckfel. Priserna är angivna i svenska kronor exkl. moms och gäller under December 2024. Leveransvillkor: fritt vårt lager. Leveranstid: 1-3 dagar. Betalningsvillkor: 15 dagar netto efter godkänd sedvanlig kreditprövning.
+                        </div>
+                    </div>
+                </div>
+                </div>
+
+            <!-- Appearance Customization -->
+                <div class="control-section">
+                <h2 data-lang-key="appearanceTitle">Customize Appearance</h2>
+                <p class="text-sm text-gray-600 mb-4" data-lang-key="appearanceDesc">Tip: Name origin flags after the country (e.g., Thailand.png). Other images: Header Logo (400x100), Header BG (600x100 recommended), Page BG (1240x1754), Price Tag (100x100), Footer (100x100).</p>
+                
+                <!-- Background Overlay Controls -->
+                <div class="mb-4">
+                    <label for="backgroundOverlayColor" class="block text-sm font-medium mb-2">Background Overlay Color</label>
+                    <input type="color" id="backgroundOverlayColor" class="w-full h-10 border border-gray-300 rounded" value="#8B4513">
+                        </div>
+                <div class="mb-4">
+                    <label for="backgroundOverlayOpacity" class="block text-sm font-medium mb-2">Background Overlay Opacity: <span id="overlayOpacityValue">30</span>%</label>
+                    <input type="range" id="backgroundOverlayOpacity" class="w-full" min="0" max="100" value="30">
+                        </div>
+                
+                <!-- Gradient Overlay Controls -->
+                <div class="mb-4">
+                    <label for="gradientOverlayColor" class="block text-sm font-medium mb-2">Gradient Overlay Color</label>
+                    <input type="color" id="gradientOverlayColor" class="w-full h-10 border border-gray-300 rounded" value="#ffffff">
+                </div>
+                <div class="mb-4">
+                    <label for="gradientOverlayOpacity" class="block text-sm font-medium mb-2">Gradient Overlay Opacity: <span id="gradientOpacityValue">60</span>%</label>
+                    <input type="range" id="gradientOverlayOpacity" class="w-full" min="0" max="100" value="60">
+                </div>
+                <div class="mb-4">
+                    <label class="flex items-center">
+                        <input type="checkbox" id="enableGradientOverlay" class="mr-2">
+                        <span class="text-sm font-medium">Enable Gradient Overlay (fades from bottom to top)</span>
+                    </label>
+                </div>
+
+                <!-- Image Uploads -->
+                <div class="space-y-4">
+                    <div>
+                        <label for="backgroundFile" class="file-upload-label">
+                            <span data-lang-key="pageBg">Page Background</span>
+                            <input type="file" id="backgroundFile" accept="image/*" class="hidden">
+                        </label>
+                        <span id="backgroundFileName" class="file-info" data-lang-key="noFileChosen">No file chosen</span>
+                        </div>
+                    
+                    <div>
+                        <label for="logoFile" class="file-upload-label">
+                            <span data-lang-key="headerLogo">Header Logo</span>
+                            <input type="file" id="logoFile" accept="image/*" class="hidden">
+                        </label>
+                        <span id="logoFileName" class="file-info" data-lang-key="noFileChosen">No file chosen</span>
+                        </div>
+                    
+                    <div>
+                        <label for="originFlagFiles" class="file-upload-label">
+                            <span data-lang-key="originFlags">Origin Flags</span>
+                            <input type="file" id="originFlagFiles" accept="image/*" multiple class="hidden">
+                        </label>
+                        <span id="originFlagFilesName" class="file-info" data-lang-key="noFilesChosen">No files chosen</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Zoom Controls -->
+            <div class="control-section">
+                <h2 data-lang-key="zoomTitle">Zoom Preview</h2>
+                <div class="flex items-center space-x-4">
+                    <button id="zoomOutBtn" class="btn-primary w-auto px-3">-</button>
+                    <input type="range" id="zoomSlider" class="flex-1" min="50" max="150" value="100">
+                    <button id="zoomInBtn" class="btn-primary w-auto px-3">+</button>
+                    <span id="zoomValue" class="text-sm font-medium">100%</span>
+                </div>
+            </div>
+
+            <!-- Print Button -->
+            <div class="control-section">
+                <button id="printBtn" class="btn-primary" data-lang-key="printButton">Print or Save as PDF</button>
+        </div>
+
+            <!-- Clear Settings Button -->
+            <div class="control-section">
+                <button id="clearSettingsBtn" class="btn-primary bg-red-600 hover:bg-red-700">Clear All Settings</button>
+    </div>
+
+            <!-- Status Messages -->
+            <div id="status"></div>
+                                            </div>
+
+        <!-- Preview Area -->
+        <div class="flex-1 overflow-auto bg-gray-100 p-4">
+            <div id="preview" class="min-h-full">
+                <!-- Preview content will be generated here -->
+                                            </div>
+                                        </div>
+                                                </div>
+
+    <!-- Scripts -->
+    <script type="module" src="src/js/app.js"></script>
+</body>
+</html>

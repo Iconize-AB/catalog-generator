@@ -1,0 +1,33 @@
+{
+  "name": "ct-food-catalog-generator",
+  "version": "1.0.0",
+  "description": "A web-based catalog generator for CT FOOD with polaroid-style product cards and splash price tags",
+  "main": "index.js",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "serve": "vite preview --port 3000",
+    "start": "npm run dev"
+  },
+  "keywords": [
+    "catalog",
+    "generator",
+    "food",
+    "polaroid",
+    "price-tags",
+    "web-app"
+  ],
+  "author": "CT FOOD",
+  "license": "MIT",
+  "devDependencies": {
+    "vite": "^5.0.0"
+  },
+  "dependencies": {
+    "xlsx": "^0.18.5",
+    "browser-image-compression": "^2.0.2"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}
