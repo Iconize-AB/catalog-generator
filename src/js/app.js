@@ -617,16 +617,28 @@ document.addEventListener('DOMContentLoaded', () => {
                         const brand = product['brand'] || '';
                         const originValue = product['origin'] || '';
                         
-                        // Origin flag
-                        let originFlagHTML = '';
-                        if (originValue) {
-                            const origins = originValue.split(',').map(o => o.trim());
-                            const firstOrigin = origins[0];
-                            const imageKey = Object.keys(originImages).find(k => k.toLowerCase() === firstOrigin.toLowerCase());
-                            const originImageUrl = imageKey ? originImages[imageKey] : null;
-                            if (originImageUrl) {
-                                originFlagHTML = `<img src="${originImageUrl}" alt="${firstOrigin}" class="origin-flag" title="${firstOrigin}">`;
+                        // Brand and origin flag
+                        let brandOriginHTML = '';
+                        if (brand || originValue) {
+                            brandOriginHTML = '<div class="brand-origin-container">';
+                            
+                            // Add brand name
+                            if (brand) {
+                                brandOriginHTML += `<div class="brand-name">${brand}</div>`;
                             }
+                            
+                            // Add origin flag
+                            if (originValue) {
+                                const origins = originValue.split(',').map(o => o.trim());
+                                const firstOrigin = origins[0];
+                                const imageKey = Object.keys(originImages).find(k => k.toLowerCase() === firstOrigin.toLowerCase());
+                                const originImageUrl = imageKey ? originImages[imageKey] : null;
+                                if (originImageUrl) {
+                                    brandOriginHTML += `<img src="${originImageUrl}" alt="${firstOrigin}" class="origin-flag" title="${firstOrigin}">`;
+                                }
+                            }
+                            
+                            brandOriginHTML += '</div>';
                         }
                         
                         // Chinese translation (you can add a mapping here)
@@ -641,7 +653,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                         card.innerHTML = `
                             <div class="product-image-area">
-                                ${originFlagHTML}
+                                ${brandOriginHTML}
                                 <img src="${imageUrl}" alt="${product['name']}" class="product-image">
                             </div>
                             <div class="product-name-container">
