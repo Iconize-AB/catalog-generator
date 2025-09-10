@@ -108,7 +108,8 @@ body {
 /* Enhanced polaroid effect for 2x1 layout */
 .page-content.layout-2x1 .product-card {
     box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2), 0 4px 8px rgba(0, 0, 0, 0.15);
-    border: 25px solid white;
+    border: 20px solid white;
+    border-bottom: 0;
     border-radius: 3px;
 }
 
@@ -131,18 +132,18 @@ body {
 .product-card {
     background-color: white;
     border: 20px solid white;
+    border-bottom: 0;
     border-radius: 2px;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.3), 0 0 0 1px rgba(0,0,0,0.1);
+    box-shadow: 0 8px 16px rgba(0,0,0,0.3), 0 0 0 1px rgba(0,0,0,0.1);
     display: flex;
     flex-direction: column;
     position: relative;
-    min-height: 350px;
     break-inside: avoid;
     page-break-inside: avoid;
     font-family: 'Arial', sans-serif;
     transform: rotate(-2deg);
     transition: all 0.3s ease;
-    margin: 15px;
+    margin: 20px;
     overflow: visible;
 }
 
@@ -158,11 +159,6 @@ body {
     transform: rotate(2deg);
 }
 
-.product-card:hover {
-    transform: rotate(0deg) scale(1.05);
-    box-shadow: 0 8px 16px rgba(0,0,0,0.4);
-    z-index: 10;
-}
 
 /* Optimization for different product counts */
 .page-content[data-product-count="7"],
@@ -174,20 +170,26 @@ body {
 
 /* Product image style for polaroid */
 .product-image {
-    width: 100%;
-    height: 200px;
+    width: 85%;
+    height: 180px;
     object-fit: cover;
     object-position: center;
     border-radius: 0;
     transition: transform 0.2s ease;
+    margin: 0;
+    display: block;
 }
 
 .product-image-area {
     background-color: white;
-    padding: 0;
+    padding: 0px 20px;
     margin: 0;
     position: relative;
     overflow: hidden;
+    min-height: 250px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .product-details-area {
@@ -208,10 +210,10 @@ body {
 /* Price tag with splash/brush-stroke effect */
 .price-tag {
     position: absolute;
-    top: -30px;
-    right: -30px;
-    width: 100px;
-    height: 100px;
+    top: -60px;
+    right: -70px;
+    width: 90px;
+    height: 90px;
     background-color: #DC2626;
     color: #FFD700;
     border-radius: 50%;
@@ -259,21 +261,21 @@ body {
         -2px -1px 0 rgba(185, 28, 28, 0.2);
 }
 
-/* Inner glow effect */
-.price-tag::after {
-    content: '';
-    position: absolute;
-    top: 2px;
-    left: 2px;
-    right: 2px;
-    bottom: 2px;
-    background: radial-gradient(circle at center, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
-    border-radius: 50%;
-    z-index: 1;
-}
+    /* Inner glow effect */
+    .price-tag::after {
+        content: '';
+        position: absolute;
+        top: 2px;
+        left: 2px;
+        right: 2px;
+        bottom: 2px;
+        background: radial-gradient(circle at center, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+        border-radius: 50%;
+        z-index: 1;
+    }
 
         .price-number {
-            font-size: 18px;
+            font-size: 22px;
             font-weight: bold;
             line-height: 1;
             text-align: center;
@@ -282,7 +284,7 @@ body {
         }
 
         .price-unit {
-            font-size: 14px;
+            font-size: 16px;
             font-weight: bold;
             margin-top: 2px;
             text-align: center;
@@ -291,14 +293,17 @@ body {
             font-style: italic;
         }
 
-.kampanj-font {
-    font-family: 'Teko', sans-serif;
-    text-transform: uppercase;
-}
+        .kampanj-font {
+            font-family: 'Teko', sans-serif;
+            text-transform: uppercase;
+        }
 
         .product-name-container {
-            padding: 15px;
             text-align: center;
+            padding-top: 16px;
+            bottom: 0;
+            left: 0;
+            right: 0;
         }
 
         .product-name {
@@ -388,10 +393,14 @@ body {
     flex-wrap: wrap;
 }
         .origin-flag {
-            width: 30px;
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            width: 40px;
             height: auto;
             border-radius: 2px;
             box-shadow: 0 0 2px rgba(0,0,0,0.2);
+            z-index: 5;
         }
 
 /* Tab style */

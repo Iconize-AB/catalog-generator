@@ -200,12 +200,14 @@ document.addEventListener('DOMContentLoaded', () => {
     let priceTagUrl = '';
     let footerLogoUrl = '';
     let headerBackgroundUrl = '';
+    let footerImageUrl = '';
     let currentTab = 'promotion';
     let backgroundOverlayColor = '#8B4513';
     let backgroundOverlayOpacity = 30;
     let gradientOverlayColor = '#ffffff';
     let gradientOverlayOpacity = 60;
     let enableGradientOverlay = false;
+    let productImageAreaColor = '#ffffff';
     
     // Page layout settings
     let pageLayouts = {
@@ -222,10 +224,10 @@ document.addEventListener('DOMContentLoaded', () => {
         { page: 1, sku: '1134', name: 'Chaokoh Coconut Milk', size: '2900ml', brand: 'Chaokoh', origin: 'Thailand', price: 79.90, bbd: '2025-10-20', unit: 'st', remark: 'Hot Sale' },
     ];
     const sampleProductImages = {
-        '1120': 'images/1120.jpg',
-        '1122': 'images/1122.jpg',
-        '1126': 'images/1126.jpg',
-        '1134': 'images/1134.jpg',
+        '1120': 'images/1120.png',
+        '1122': 'images/1122.png',
+        '1126': 'images/1126.png',
+        '1134': 'images/1134.png',
     };
     const sampleOriginImages = {
         'Hong Kong': 'images/CTFood biglogo (1).png',
@@ -411,6 +413,14 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 overlay.style.display = 'none';
             }
+        });
+    }
+    
+    // Update product image area background color
+    function updateProductImageAreaColor() {
+        const productImageAreas = document.querySelectorAll('.product-image-area');
+        productImageAreas.forEach(area => {
+            area.style.backgroundColor = productImageAreaColor;
         });
     }
 
@@ -606,7 +616,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         const card = document.createElement('div');
                         card.className = 'product-card';
                         
-                        const imageUrl = productImages[product['sku']] || 'images/1120.jpg';
+                        const imageUrl = productImages[product['sku']] || 'images/1120.png';
                         const price = formatPrice(product['price']);
                         const unit = product['unit'] || '';
                         const brand = product['brand'] || '';
@@ -663,9 +673,9 @@ document.addEventListener('DOMContentLoaded', () => {
                         <div class="flex items-start justify-between">
                             <!-- Left side - Fortune Cookie with CT FOOD logo -->
                             <div class="flex items-center">
-                                <!-- Fortune Cookie -->
+                                <!-- Fortune Cookie or Custom Footer Image -->
                                 <div class="relative">
-                                    <img src="images/fortune_cookie.png" alt="CT FOOD Fortune Cookie" style="height: 70px; width: auto; object-fit: contain;">
+                                    <img src="${footerImageUrl || 'images/fortune_cookie.png'}" alt="CT FOOD Footer Image" style="height: 70px; width: auto; object-fit: contain;">
                                 </div>
                             </div>
                             
@@ -703,6 +713,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 previewArea.classList.remove('loading');
                 addStatusMessage('statusRenderError', 'error', error.message);
             }
+            
+            // Apply product image area background color after rendering
+            updateProductImageAreaColor();
         }, 50);
     };
 
@@ -807,6 +820,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const savedGradientOpacity = localStorage.getItem('gradientOverlayOpacity');
         const savedEnableGradient = localStorage.getItem('enableGradientOverlay');
         
+        // Load product image area color
+        const savedProductImageAreaColor = localStorage.getItem('productImageAreaColor');
+        
         if (savedGradientColor) {
             gradientOverlayColor = savedGradientColor;
             document.getElementById('gradientOverlayColor').value = savedGradientColor;
@@ -821,6 +837,11 @@ document.addEventListener('DOMContentLoaded', () => {
         if (savedEnableGradient) {
             enableGradientOverlay = savedEnableGradient === 'true';
             document.getElementById('enableGradientOverlay').checked = enableGradientOverlay;
+        }
+        
+        if (savedProductImageAreaColor) {
+            productImageAreaColor = savedProductImageAreaColor;
+            document.getElementById('productImageAreaColor').value = productImageAreaColor;
         }
 
         // Load page layout settings
@@ -861,6 +882,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const savedPriceTagUrl = localStorage.getItem('priceTagUrl');
         const savedFooterLogoUrl = localStorage.getItem('footerLogoUrl');
         const savedHeaderBackgroundUrl = localStorage.getItem('headerBackgroundUrl');
+        const savedFooterImageUrl = localStorage.getItem('footerImageUrl');
         
         if (savedBackgroundUrl) {
             backgroundUrl = savedBackgroundUrl;
@@ -882,6 +904,10 @@ document.addEventListener('DOMContentLoaded', () => {
             headerBackgroundUrl = savedHeaderBackgroundUrl;
             document.getElementById('headerBackgroundFileName').textContent = 'Header background loaded';
         }
+        if (savedFooterImageUrl) {
+            footerImageUrl = savedFooterImageUrl;
+            document.getElementById('footerImageFileName').textContent = 'Footer image loaded';
+        }
     }
 
     // Save settings to localStorage
@@ -890,6 +916,7 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.setItem('backgroundOverlayOpacity', backgroundOverlayOpacity.toString());
         localStorage.setItem('gradientOverlayColor', gradientOverlayColor);
         localStorage.setItem('gradientOverlayOpacity', gradientOverlayOpacity.toString());
+        localStorage.setItem('productImageAreaColor', productImageAreaColor);
         localStorage.setItem('enableGradientOverlay', enableGradientOverlay.toString());
         localStorage.setItem('pageLayouts', JSON.stringify(pageLayouts));
         localStorage.setItem('promoTime', document.getElementById('promoTime').value);
@@ -900,6 +927,11 @@ document.addEventListener('DOMContentLoaded', () => {
         // Save background image URL
         if (backgroundUrl) {
             localStorage.setItem('backgroundUrl', backgroundUrl);
+        }
+        
+        // Save footer image URL
+        if (footerImageUrl) {
+            localStorage.setItem('footerImageUrl', footerImageUrl);
         }
         if (logoUrl) {
             localStorage.setItem('logoUrl', logoUrl);
@@ -955,6 +987,7 @@ document.addEventListener('DOMContentLoaded', () => {
     setupImageInput('priceTagFile', url => priceTagUrl = url, '价格标签图片');
     setupImageInput('footerLogoFile', url => footerLogoUrl = url, '页脚logo图片');
     setupImageInput('headerBackgroundFile', url => headerBackgroundUrl = url, '页眉背景', true);
+    setupImageInput('footerImageFile', url => footerImageUrl = url, '页脚图片');
 
     promoTimeInput.addEventListener('input', debounce(() => {
         renderPreview();
@@ -1015,6 +1048,15 @@ document.addEventListener('DOMContentLoaded', () => {
         updateGradientOverlay();
         saveSettings();
     });
+    
+    // Product image area background color control
+    const productImageAreaColorInput = document.getElementById('productImageAreaColor');
+    
+    productImageAreaColorInput.addEventListener('input', (e) => {
+        productImageAreaColor = e.target.value;
+        updateProductImageAreaColor();
+        saveSettings();
+    });
 
     // Page layout controls
     const page1LayoutSelect = document.getElementById('page1Layout');
@@ -1051,6 +1093,7 @@ document.addEventListener('DOMContentLoaded', () => {
             localStorage.removeItem('gradientOverlayColor');
             localStorage.removeItem('gradientOverlayOpacity');
             localStorage.removeItem('enableGradientOverlay');
+            localStorage.removeItem('productImageAreaColor');
             localStorage.removeItem('pageLayouts');
             localStorage.removeItem('promoTime');
             localStorage.removeItem('promoText');
@@ -1061,6 +1104,7 @@ document.addEventListener('DOMContentLoaded', () => {
             localStorage.removeItem('priceTagUrl');
             localStorage.removeItem('footerLogoUrl');
             localStorage.removeItem('headerBackgroundUrl');
+            localStorage.removeItem('footerImageUrl');
             
             // Reset to defaults
             backgroundOverlayColor = '#8B4513';
@@ -1068,12 +1112,14 @@ document.addEventListener('DOMContentLoaded', () => {
             gradientOverlayColor = '#ffffff';
             gradientOverlayOpacity = 60;
             enableGradientOverlay = false;
+            productImageAreaColor = '#ffffff';
             pageLayouts = { 1: '2x2', 2: '2x2', 3: '2x2' };
             backgroundUrl = 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=1240&h=1754&fit=crop&crop=center';
             logoUrl = '';
             priceTagUrl = '';
             footerLogoUrl = '';
             headerBackgroundUrl = '';
+            footerImageUrl = '';
             
             // Reset form fields
             document.getElementById('backgroundOverlayColor').value = backgroundOverlayColor;
@@ -1083,6 +1129,7 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('gradientOverlayOpacity').value = gradientOverlayOpacity;
             document.getElementById('gradientOpacityValue').textContent = gradientOverlayOpacity;
             document.getElementById('enableGradientOverlay').checked = enableGradientOverlay;
+            document.getElementById('productImageAreaColor').value = productImageAreaColor;
             document.getElementById('page1Layout').value = pageLayouts[1];
             document.getElementById('page2Layout').value = pageLayouts[2];
             document.getElementById('page3Layout').value = pageLayouts[3];
@@ -1097,6 +1144,7 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('priceTagFileName').textContent = '未选择文件';
             document.getElementById('footerLogoFileName').textContent = '未选择文件';
             document.getElementById('headerBackgroundFileName').textContent = '未选择文件';
+            document.getElementById('footerImageFileName').textContent = 'No file chosen (using default fortune cookie)';
             
             // Re-render preview
             renderPreview();

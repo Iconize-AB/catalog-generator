@@ -125,6 +125,12 @@
                     <input type="range" id="backgroundOverlayOpacity" class="w-full" min="0" max="100" value="30">
                         </div>
                 
+                <!-- Product Image Area Background Color -->
+                <div class="mb-4">
+                    <label for="productImageAreaColor" class="block text-sm font-medium mb-2">Product Image Area Background Color</label>
+                    <input type="color" id="productImageAreaColor" class="w-full h-10 border border-gray-300 rounded" value="#ffffff">
+                </div>
+                
                 <!-- Gradient Overlay Controls -->
                 <div class="mb-4">
                     <label for="gradientOverlayColor" class="block text-sm font-medium mb-2">Gradient Overlay Color</label>
@@ -205,6 +211,14 @@
                             <input type="file" id="originFlagFiles" accept="image/*" multiple class="hidden">
                         </label>
                         <span id="originFlagFilesName" class="file-info" data-lang-key="noFilesChosen">No files chosen</span>
+                    </div>
+                    
+                    <div>
+                        <label for="footerImageFile" class="file-upload-label">
+                            <span>Footer Image (replaces fortune cookie)</span>
+                            <input type="file" id="footerImageFile" accept="image/*" class="hidden">
+                        </label>
+                        <span id="footerImageFileName" class="file-info">No file chosen (using default fortune cookie)</span>
                     </div>
             </div>
         </div>
