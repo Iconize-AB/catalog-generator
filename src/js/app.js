@@ -201,6 +201,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let footerLogoUrl = '';
     let headerBackgroundUrl = '';
     let footerImageUrl = '';
+    let bannerImageUrl = '';
     let currentTab = 'promotion';
     let backgroundOverlayColor = '#8B4513';
     let backgroundOverlayOpacity = 30;
@@ -537,6 +538,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     page.className = 'page';
                     if (backgroundUrl) page.style.backgroundImage = `url(${backgroundUrl})`;
                     
+                    // Create page wrapper
+                    const pageWrapper = document.createElement('div');
+                    pageWrapper.className = 'page-wrapper';
+                    
                     // Create overlay div
                     const overlay = document.createElement('div');
                     overlay.className = 'page-overlay';
@@ -562,7 +567,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
 
                     const header = document.createElement('div');
-                    header.className = 'page-header flex items-center justify-between pb-6';
+                    header.className = 'page-header flex items-center justify-between pb-6 pl-6';
                     header.style.position = 'relative';
                     header.style.zIndex = '10';
 
@@ -575,25 +580,15 @@ document.addEventListener('DOMContentLoaded', () => {
                     const rightContainer = document.createElement('div');
                     rightContainer.className = 'flex items-center space-x-4';
                     
-                    // Decorative elements (mooncakes and lanterns)
-                    const decorations = document.createElement('div');
-                    decorations.className = 'flex items-center space-x-2';
-                    decorations.innerHTML = `
-                        <div class="w-8 h-8 bg-yellow-300 rounded-full border-2 border-yellow-600"></div>
-                        <div class="w-8 h-8 bg-yellow-300 rounded-full border-2 border-yellow-600"></div>
-                        <div class="w-8 h-8 bg-yellow-300 rounded-full border-2 border-yellow-600"></div>
+                    // Banner image
+                    const bannerContainer = document.createElement('div');
+                    bannerContainer.className = 'header-banner-container';
+                    const bannerImageSrc = bannerImageUrl || 'images/banner_top.png';
+                    bannerContainer.innerHTML = `
+                        <img src="${bannerImageSrc}" alt="Promotional Banner" style="max-height: 80px; max-width: 200px; object-fit: contain;">
                     `;
                     
-                    // Promo text
-                    const promoContainer = document.createElement('div');
-                    promoContainer.className = 'text-right';
-                    promoContainer.innerHTML = `
-                        <h3 class="text-3xl font-bold text-red-600 mb-1">${promoText}</h3>
-                        <p class="text-lg font-semibold text-gray-800">${promoTime}</p>
-                    `;
-                    
-                    rightContainer.appendChild(decorations);
-                    rightContainer.appendChild(promoContainer);
+                    rightContainer.appendChild(bannerContainer);
 
                     header.appendChild(logoContainer);
                     header.appendChild(rightContainer);
@@ -652,11 +647,13 @@ document.addEventListener('DOMContentLoaded', () => {
                             <div class="product-name-container">
                                 <div class="product-sku">${product['sku'] || ''}:</div>
                                 <div class="product-name">${product['name'] || ''}</div>
+                                ${product['size'] ? `<div class="product-size">${product['size']}</div>` : ''}
                                 ${chineseName ? `<div class="product-chinese">${chineseName}</div>` : ''}
                             </div>
                             <div class="price-tag">
+                                <img src="images/Group 1.png" alt="Price tag background">
                                 <div class="price-number">${price}:-</div>
-                                <div class="price-unit">${unit || ''}</div>
+                                <div class="price-unit">/ ${unit || ''}</div>
                             </div>
                         `;
                         
@@ -693,9 +690,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     `;
                     footer.innerHTML = footerMainContentHTML;
 
-                    page.appendChild(header);
-                    page.appendChild(content);
-                    page.appendChild(footer);
+                    pageWrapper.appendChild(header);
+                    pageWrapper.appendChild(content);
+                    pageWrapper.appendChild(footer);
+                    page.appendChild(pageWrapper);
                     previewArea.appendChild(page);
                 }
 
@@ -883,6 +881,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const savedFooterLogoUrl = localStorage.getItem('footerLogoUrl');
         const savedHeaderBackgroundUrl = localStorage.getItem('headerBackgroundUrl');
         const savedFooterImageUrl = localStorage.getItem('footerImageUrl');
+        const savedBannerImageUrl = localStorage.getItem('bannerImageUrl');
         
         if (savedBackgroundUrl) {
             backgroundUrl = savedBackgroundUrl;
@@ -907,6 +906,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (savedFooterImageUrl) {
             footerImageUrl = savedFooterImageUrl;
             document.getElementById('footerImageFileName').textContent = 'Footer image loaded';
+        }
+        if (savedBannerImageUrl) {
+            bannerImageUrl = savedBannerImageUrl;
+            document.getElementById('bannerImageFileName').textContent = 'Banner image loaded';
         }
     }
 
@@ -935,6 +938,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         if (logoUrl) {
             localStorage.setItem('logoUrl', logoUrl);
+        }
+        if (bannerImageUrl) {
+            localStorage.setItem('bannerImageUrl', bannerImageUrl);
         }
         if (priceTagUrl) {
             localStorage.setItem('priceTagUrl', priceTagUrl);
@@ -988,6 +994,7 @@ document.addEventListener('DOMContentLoaded', () => {
     setupImageInput('footerLogoFile', url => footerLogoUrl = url, '页脚logo图片');
     setupImageInput('headerBackgroundFile', url => headerBackgroundUrl = url, '页眉背景', true);
     setupImageInput('footerImageFile', url => footerImageUrl = url, '页脚图片');
+    setupImageInput('bannerImageFile', url => bannerImageUrl = url, '横幅图片');
 
     promoTimeInput.addEventListener('input', debounce(() => {
         renderPreview();
@@ -1105,6 +1112,7 @@ document.addEventListener('DOMContentLoaded', () => {
             localStorage.removeItem('footerLogoUrl');
             localStorage.removeItem('headerBackgroundUrl');
             localStorage.removeItem('footerImageUrl');
+            localStorage.removeItem('bannerImageUrl');
             
             // Reset to defaults
             backgroundOverlayColor = '#8B4513';
@@ -1120,6 +1128,7 @@ document.addEventListener('DOMContentLoaded', () => {
             footerLogoUrl = '';
             headerBackgroundUrl = '';
             footerImageUrl = '';
+            bannerImageUrl = '';
             
             // Reset form fields
             document.getElementById('backgroundOverlayColor').value = backgroundOverlayColor;
@@ -1145,6 +1154,7 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('footerLogoFileName').textContent = '未选择文件';
             document.getElementById('headerBackgroundFileName').textContent = '未选择文件';
             document.getElementById('footerImageFileName').textContent = 'No file chosen (using default fortune cookie)';
+            document.getElementById('bannerImageFileName').textContent = 'No file chosen (using default banner)';
             
             // Re-render preview
             renderPreview();

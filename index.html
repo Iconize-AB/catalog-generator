@@ -129,7 +129,7 @@
                 <div class="mb-4">
                     <label for="productImageAreaColor" class="block text-sm font-medium mb-2">Product Image Area Background Color</label>
                     <input type="color" id="productImageAreaColor" class="w-full h-10 border border-gray-300 rounded" value="#ffffff">
-                </div>
+                        </div>
                 
                 <!-- Gradient Overlay Controls -->
                 <div class="mb-4">
@@ -161,7 +161,7 @@
                                 <option value="3x2">3x2 (6 products)</option>
                                 <option value="2x3">2x3 (6 products)</option>
                             </select>
-                        </div>
+                    </div>
                         <div>
                             <label for="page2Layout" class="block text-sm font-medium mb-2">Page 2 Layout:</label>
                             <select id="page2Layout" class="w-full p-2 border border-gray-300 rounded">
@@ -172,7 +172,7 @@
                                 <option value="3x2">3x2 (6 products)</option>
                                 <option value="2x3">2x3 (6 products)</option>
                             </select>
-                        </div>
+                </div>
                         <div>
                             <label for="page3Layout" class="block text-sm font-medium mb-2">Page 3 Layout:</label>
                             <select id="page3Layout" class="w-full p-2 border border-gray-300 rounded">
@@ -183,10 +183,10 @@
                                 <option value="3x2">3x2 (6 products)</option>
                                 <option value="2x3">2x3 (6 products)</option>
                             </select>
-                    </div>
+            </div>
                 </div>
             </div>
-            
+
                 <!-- Image Uploads -->
                 <div class="space-y-4">
                     <div>
@@ -204,6 +204,13 @@
                         </label>
                         <span id="logoFileName" class="file-info" data-lang-key="noFileChosen">No file chosen</span>
             </div>
+                    <div>
+                        <label for="bannerImageFile" class="file-upload-label">
+                            <span>Header Banner Image</span>
+                            <input type="file" id="bannerImageFile" accept="image/*" class="hidden">
+                        </label>
+                        <span id="bannerImageFileName" class="file-info">No file chosen (using default banner)</span>
+        </div>
 
                     <div>
                         <label for="originFlagFiles" class="file-upload-label">
@@ -211,17 +218,17 @@
                             <input type="file" id="originFlagFiles" accept="image/*" multiple class="hidden">
                         </label>
                         <span id="originFlagFilesName" class="file-info" data-lang-key="noFilesChosen">No files chosen</span>
-                    </div>
-                    
+    </div>
+
                     <div>
                         <label for="footerImageFile" class="file-upload-label">
                             <span>Footer Image (replaces fortune cookie)</span>
                             <input type="file" id="footerImageFile" accept="image/*" class="hidden">
                         </label>
                         <span id="footerImageFileName" class="file-info">No file chosen (using default fortune cookie)</span>
-                    </div>
-            </div>
-        </div>
+                                            </div>
+                                        </div>
+                                            </div>
 
             <!-- Zoom Controls -->
             <div class="control-section">
@@ -231,8 +238,8 @@
                     <input type="range" id="zoomSlider" class="flex-1" min="50" max="150" value="100">
                     <button id="zoomInBtn" class="btn-primary w-auto px-3">+</button>
                     <span id="zoomValue" class="text-sm font-medium">100%</span>
+                                        </div>
         </div>
-    </div>
 
             <!-- Print Button -->
             <div class="control-section">
@@ -249,7 +256,7 @@
                                             </div>
 
         <!-- Preview Area -->
-        <div class="flex-1 overflow-auto bg-gray-100 p-4">
+        <div class="flex-1 overflow-auto bg-gray-100">
             <div id="preview" class="min-h-full">
                 <!-- Preview content will be generated here -->
                                             </div>
