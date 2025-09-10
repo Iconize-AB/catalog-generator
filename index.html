@@ -129,18 +129,58 @@
                 <div class="mb-4">
                     <label for="gradientOverlayColor" class="block text-sm font-medium mb-2">Gradient Overlay Color</label>
                     <input type="color" id="gradientOverlayColor" class="w-full h-10 border border-gray-300 rounded" value="#ffffff">
-                </div>
+                        </div>
                 <div class="mb-4">
                     <label for="gradientOverlayOpacity" class="block text-sm font-medium mb-2">Gradient Overlay Opacity: <span id="gradientOpacityValue">60</span>%</label>
                     <input type="range" id="gradientOverlayOpacity" class="w-full" min="0" max="100" value="60">
-                </div>
+                        </div>
                 <div class="mb-4">
                     <label class="flex items-center">
                         <input type="checkbox" id="enableGradientOverlay" class="mr-2">
                         <span class="text-sm font-medium">Enable Gradient Overlay (fades from bottom to top)</span>
                     </label>
-                </div>
+                        </div>
 
+                <!-- Page Layout Controls -->
+                <div class="mb-4">
+                    <h3 class="text-lg font-semibold mb-3">Page Layout Settings</h3>
+                    <div class="space-y-3">
+                        <div>
+                            <label for="page1Layout" class="block text-sm font-medium mb-2">Page 1 Layout:</label>
+                            <select id="page1Layout" class="w-full p-2 border border-gray-300 rounded">
+                                <option value="2x2">2x2 (4 products)</option>
+                                <option value="1x2">1x2 (2 products)</option>
+                                <option value="2x1">2x1 (2 products - Polaroid style)</option>
+                                <option value="1x1">1x1 (1 product)</option>
+                                <option value="3x2">3x2 (6 products)</option>
+                                <option value="2x3">2x3 (6 products)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="page2Layout" class="block text-sm font-medium mb-2">Page 2 Layout:</label>
+                            <select id="page2Layout" class="w-full p-2 border border-gray-300 rounded">
+                                <option value="2x2">2x2 (4 products)</option>
+                                <option value="1x2">1x2 (2 products)</option>
+                                <option value="2x1">2x1 (2 products - Polaroid style)</option>
+                                <option value="1x1">1x1 (1 product)</option>
+                                <option value="3x2">3x2 (6 products)</option>
+                                <option value="2x3">2x3 (6 products)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="page3Layout" class="block text-sm font-medium mb-2">Page 3 Layout:</label>
+                            <select id="page3Layout" class="w-full p-2 border border-gray-300 rounded">
+                                <option value="2x2">2x2 (4 products)</option>
+                                <option value="1x2">1x2 (2 products)</option>
+                                <option value="2x1">2x1 (2 products - Polaroid style)</option>
+                                <option value="1x1">1x1 (1 product)</option>
+                                <option value="3x2">3x2 (6 products)</option>
+                                <option value="2x3">2x3 (6 products)</option>
+                            </select>
+                    </div>
+                </div>
+            </div>
+            
                 <!-- Image Uploads -->
                 <div class="space-y-4">
                     <div>
@@ -149,7 +189,7 @@
                             <input type="file" id="backgroundFile" accept="image/*" class="hidden">
                         </label>
                         <span id="backgroundFileName" class="file-info" data-lang-key="noFileChosen">No file chosen</span>
-                        </div>
+                </div>
                     
                     <div>
                         <label for="logoFile" class="file-upload-label">
@@ -157,8 +197,8 @@
                             <input type="file" id="logoFile" accept="image/*" class="hidden">
                         </label>
                         <span id="logoFileName" class="file-info" data-lang-key="noFileChosen">No file chosen</span>
-                        </div>
-                    
+            </div>
+
                     <div>
                         <label for="originFlagFiles" class="file-upload-label">
                             <span data-lang-key="originFlags">Origin Flags</span>
@@ -166,9 +206,9 @@
                         </label>
                         <span id="originFlagFilesName" class="file-info" data-lang-key="noFilesChosen">No files chosen</span>
                     </div>
-                </div>
             </div>
-            
+        </div>
+
             <!-- Zoom Controls -->
             <div class="control-section">
                 <h2 data-lang-key="zoomTitle">Zoom Preview</h2>
@@ -177,8 +217,8 @@
                     <input type="range" id="zoomSlider" class="flex-1" min="50" max="150" value="100">
                     <button id="zoomInBtn" class="btn-primary w-auto px-3">+</button>
                     <span id="zoomValue" class="text-sm font-medium">100%</span>
-                </div>
-            </div>
+        </div>
+    </div>
 
             <!-- Print Button -->
             <div class="control-section">

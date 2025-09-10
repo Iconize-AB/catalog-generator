@@ -206,6 +206,13 @@ document.addEventListener('DOMContentLoaded', () => {
     let gradientOverlayColor = '#ffffff';
     let gradientOverlayOpacity = 60;
     let enableGradientOverlay = false;
+    
+    // Page layout settings
+    let pageLayouts = {
+        1: '2x2',
+        2: '2x2', 
+        3: '2x2'
+    };
 
     // --- START: Sample Data ---
     const sampleProductData = [
@@ -399,7 +406,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (enableGradientOverlay) {
                 const opacity = gradientOverlayOpacity / 100;
                 const rgb = hexToRgb(gradientOverlayColor);
-                overlay.style.background = `linear-gradient(180deg, transparent 0%, rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${opacity}) 100%)`;
+                overlay.style.background = `linear-gradient(180deg, rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${opacity}) 0%, transparent 100%)`;
                 overlay.style.display = 'block';
             } else {
                 overlay.style.display = 'none';
@@ -539,7 +546,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (enableGradientOverlay) {
                         const gradientOpacity = gradientOverlayOpacity / 100;
                         const gradientRgb = hexToRgb(gradientOverlayColor);
-                        gradientOverlay.style.background = `linear-gradient(180deg, transparent 0%, rgba(${gradientRgb.r}, ${gradientRgb.g}, ${gradientRgb.b}, ${gradientOpacity}) 100%)`;
+                        gradientOverlay.style.background = `linear-gradient(180deg, rgba(${gradientRgb.r}, ${gradientRgb.g}, ${gradientRgb.b}, ${gradientOpacity}) 0%, transparent 100%)`;
                     } else {
                         gradientOverlay.style.display = 'none';
                     }
@@ -582,7 +589,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     header.appendChild(rightContainer);
 
                     const content = document.createElement('div');
-                    content.className = 'page-content';
+                    const layout = pageLayouts[i] || '2x2';
+                    content.className = `page-content layout-${layout}`;
                     const numProducts = pageProducts.length;
                     content.setAttribute('data-product-count', numProducts);
                     
@@ -646,7 +654,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     });
 
                     const footer = document.createElement('div');
-                    footer.className = 'page-footer mt-auto pt-4';
+                    footer.className = 'page-footer mt-auto pt-4 pb-4';
                     footer.style.position = 'relative';
                     footer.style.zIndex = '10';
                     
@@ -657,22 +665,21 @@ document.addEventListener('DOMContentLoaded', () => {
                             <div class="flex items-center">
                                 <!-- Fortune Cookie -->
                                 <div class="relative">
-                                    <img src="images/fortune_cookie.png" alt="CT FOOD Fortune Cookie" style="height: 60px; width: auto; object-fit: contain;">
+                                    <img src="images/fortune_cookie.png" alt="CT FOOD Fortune Cookie" style="height: 70px; width: auto; object-fit: contain;">
                                 </div>
                             </div>
                             
                             <!-- Right side - Contact info and terms -->
-                            <div class="flex-1 ml-8">
-                                <div class="text-blue-800 font-semibold text-sm mb-2">
+                            <div class="flex-1 ml-2">
+                                <div class="text-blue-800 font-semibold text-xs mb-0.5" style="font-size: 10px;">
                                     STOCKHOLM: 08 581 658 80 | order.sth@ctfood.se | www.ctfood.se
                                 </div>
-                                <div class="w-full h-px bg-blue-300 mb-3"></div>
-                                <div class="text-blue-800 text-xs leading-relaxed">
+                                <div class="w-full h-px bg-blue-300 mb-1"></div>
+                                <div class="text-blue-800 text-xs leading-tight" style="font-size: 9px;">
                                     ${footerTextValue}
                                 </div>
                             </div>
                         </div>
-                        <div class="text-center text-xs text-blue-500 mt-4">${i} / ${totalPages}</div>
                     `;
                     footer.innerHTML = footerMainContentHTML;
 
@@ -815,6 +822,15 @@ document.addEventListener('DOMContentLoaded', () => {
             enableGradientOverlay = savedEnableGradient === 'true';
             document.getElementById('enableGradientOverlay').checked = enableGradientOverlay;
         }
+
+        // Load page layout settings
+        const savedPageLayouts = localStorage.getItem('pageLayouts');
+        if (savedPageLayouts) {
+            pageLayouts = JSON.parse(savedPageLayouts);
+            document.getElementById('page1Layout').value = pageLayouts[1] || '2x2';
+            document.getElementById('page2Layout').value = pageLayouts[2] || '2x2';
+            document.getElementById('page3Layout').value = pageLayouts[3] || '2x2';
+        }
         
         // Load promo settings
         const savedPromoTime = localStorage.getItem('promoTime');
@@ -875,6 +891,7 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.setItem('gradientOverlayColor', gradientOverlayColor);
         localStorage.setItem('gradientOverlayOpacity', gradientOverlayOpacity.toString());
         localStorage.setItem('enableGradientOverlay', enableGradientOverlay.toString());
+        localStorage.setItem('pageLayouts', JSON.stringify(pageLayouts));
         localStorage.setItem('promoTime', document.getElementById('promoTime').value);
         localStorage.setItem('promoText', document.getElementById('promoText').value);
         localStorage.setItem('newArrivalsText', document.getElementById('newArrivalsText').value);
@@ -999,6 +1016,29 @@ document.addEventListener('DOMContentLoaded', () => {
         saveSettings();
     });
 
+    // Page layout controls
+    const page1LayoutSelect = document.getElementById('page1Layout');
+    const page2LayoutSelect = document.getElementById('page2Layout');
+    const page3LayoutSelect = document.getElementById('page3Layout');
+
+    page1LayoutSelect.addEventListener('change', (e) => {
+        pageLayouts[1] = e.target.value;
+        saveSettings();
+        renderPreview();
+    });
+
+    page2LayoutSelect.addEventListener('change', (e) => {
+        pageLayouts[2] = e.target.value;
+        saveSettings();
+        renderPreview();
+    });
+
+    page3LayoutSelect.addEventListener('change', (e) => {
+        pageLayouts[3] = e.target.value;
+        saveSettings();
+        renderPreview();
+    });
+
     printBtn.addEventListener('click', () => window.print());
 
     // Clear settings button
@@ -1011,6 +1051,7 @@ document.addEventListener('DOMContentLoaded', () => {
             localStorage.removeItem('gradientOverlayColor');
             localStorage.removeItem('gradientOverlayOpacity');
             localStorage.removeItem('enableGradientOverlay');
+            localStorage.removeItem('pageLayouts');
             localStorage.removeItem('promoTime');
             localStorage.removeItem('promoText');
             localStorage.removeItem('newArrivalsText');
@@ -1027,6 +1068,7 @@ document.addEventListener('DOMContentLoaded', () => {
             gradientOverlayColor = '#ffffff';
             gradientOverlayOpacity = 60;
             enableGradientOverlay = false;
+            pageLayouts = { 1: '2x2', 2: '2x2', 3: '2x2' };
             backgroundUrl = 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=1240&h=1754&fit=crop&crop=center';
             logoUrl = '';
             priceTagUrl = '';
@@ -1041,6 +1083,9 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('gradientOverlayOpacity').value = gradientOverlayOpacity;
             document.getElementById('gradientOpacityValue').textContent = gradientOverlayOpacity;
             document.getElementById('enableGradientOverlay').checked = enableGradientOverlay;
+            document.getElementById('page1Layout').value = pageLayouts[1];
+            document.getElementById('page2Layout').value = pageLayouts[2];
+            document.getElementById('page3Layout').value = pageLayouts[3];
             document.getElementById('promoTime').value = 'September 2013';
             document.getElementById('promoText').value = 'Erbjudanden';
             document.getElementById('newArrivalsText').value = 'NYHETER';

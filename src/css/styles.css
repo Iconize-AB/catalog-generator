@@ -41,7 +41,7 @@ body {
     left: 0;
     right: 0;
     bottom: 0;
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.8) 0%, transparent 100%);
+    background: linear-gradient(180deg, transparent 0%, rgba(255, 255, 255, 0.8) 100%);
     pointer-events: none;
     z-index: 2;
 }
@@ -49,19 +49,82 @@ body {
             flex-shrink: 0;
             position: relative;
             z-index: 10;
-            padding: 20px 0;
-            margin-top: 20px;
+            padding: 4px 0;
+            margin-top: 5px;
         }
 .page-content {
     flex-grow: 1;
     display: grid;
     grid-template-columns: 1fr 1fr;
     grid-template-rows: 1fr 1fr;
-    gap: 20mm;
-    padding: 20mm 10mm;
+    gap: 8mm;
+    padding: 8mm 10mm;
     overflow: hidden;
     position: relative;
     z-index: 5;
+}
+
+/* Page Layout Variations */
+.page-content.layout-1x1 {
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr;
+    justify-content: center;
+    align-items: center;
+}
+
+.page-content.layout-1x2 {
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr 1fr;
+}
+
+.page-content.layout-2x1 {
+    display: flex;
+    position: relative;
+    align-items: center;
+    justify-content: center;
+    padding: 40mm 20mm;
+}
+
+.page-content.layout-2x1 .product-card:nth-child(1) {
+    position: absolute;
+    top: 20%;
+    left: 15%;
+    transform: rotate(3deg);
+    z-index: 2;
+    width: 45%;
+    height: auto;
+}
+
+.page-content.layout-2x1 .product-card:nth-child(2) {
+    position: absolute;
+    bottom: 20%;
+    right: 15%;
+    transform: rotate(-2deg);
+    z-index: 1;
+    width: 45%;
+    height: auto;
+}
+
+/* Enhanced polaroid effect for 2x1 layout */
+.page-content.layout-2x1 .product-card {
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2), 0 4px 8px rgba(0, 0, 0, 0.15);
+    border: 25px solid white;
+    border-radius: 3px;
+}
+
+.page-content.layout-2x2 {
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+}
+
+.page-content.layout-2x3 {
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr 1fr;
+}
+
+.page-content.layout-3x2 {
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
 }
 
 /* Polaroid-style product card */
