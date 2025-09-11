@@ -1,0 +1,1462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Automatic Catalog Generator (Excel) - Improved</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/browser-image-compression@2.0.2/dist/browser-image-compression.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&family=Teko:wght@700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            background-color: #f0f2f5;
+        }
+        /* A4 page style */
+        .page {
+            width: 210mm;
+            height: 297mm; /* Fixed height to prevent footer from being pushed to the next page */
+            margin: 1rem auto;
+            background-color: white;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            overflow: hidden; /* Prevent content overflow */
+        }
+        
+        .page-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            pointer-events: none;
+            z-index: 1;
+        }
+        
+        .page-gradient-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            pointer-events: none;
+            z-index: 2;
+        }
+        .page-header, .page-footer {
+            flex-shrink: 0;
+            position: relative;
+            z-index: 10;
+        }
+        .page-content {
+            flex-grow: 1;
+            margin-top: 14mm;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-content: flex-start; /* Align content from the top */
+            gap: 15mm 10mm;
+            padding: 10mm 16mm;
+            overflow: hidden; /* Prevent content overflow */
+        }
+        
+        /* Improved product card style */
+        .product-card {
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            background-color: white;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            min-height: 250px;
+            margin-bottom: 10px;
+            break-inside: avoid;
+            page-break-inside: avoid;
+            font-family: 'Segoe Print', cursive; /* Reverted to original */
+            font-weight: bold;
+            box-shadow: 0 8px 40px rgba(0,0,0,0.12), 0 4px 20px rgba(0,0,0,0.08), 0 2px 10px rgba(0,0,0,0.04);
+            transition: all 0.3s ease;
+        }
+
+        .product-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 50px rgba(0,0,0,0.15), 0 6px 25px rgba(0,0,0,0.1), 0 3px 15px rgba(0,0,0,0.06);
+        }
+        
+        /* Optimization for different product counts */
+        .page-content[data-product-count="7"],
+        .page-content[data-product-count="8"],
+        .page-content[data-product-count="9"] {
+            gap: 2mm 8mm; /* Reduce vertical gap */
+        }
+        
+        /* Improved image style */
+        .product-image {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            object-position: center;
+            border-radius: 4px;
+            transition: transform 0.2s ease;
+        }
+
+        .product-image-area {
+            background-color: #D6E0EC;
+            border: 1px solid #D6E0EC;
+            padding: 4px;
+            border-radius: 6px;
+            margin: 8px;
+            position: relative; /* Needed for absolute positioning of children */
+        }
+        
+        .product-image-area[style*="background-color"] {
+            background-color: var(--product-image-bg-color, white);
+        }
+        
+        .product-details-area {
+            background-color: white;
+        }
+        
+        /* Style for failed image loading */
+        .product-image[src*="placehold"] {
+            background: linear-gradient(135deg, #f3f4f6, #e5e7eb);
+            color: #6b7280;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+        
+        /* Improved price tag */
+        .price-tag {
+            position: absolute;
+            top: -40px;
+            right: -40px;
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            line-height: 1;
+            text-align: center;
+            padding: 5px;
+            transform: rotate(15deg);
+            z-index: 5;
+            -webkit-print-color-adjust: exact;  
+            print-color-adjust: exact;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            overflow: hidden;
+        }
+        
+        .price-tag img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            z-index: 1;
+        }
+        
+        .price-tag .price-number,
+        .price-tag .price-unit {
+            position: relative;
+            z-index: 2;
+            color: #FFD700;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+            font-weight: bold;
+        }
+        
+        .price-number {
+            font-size: clamp(0.8rem, 2vw, 1.25rem);
+            word-break: break-all;
+        }
+        
+        .price-unit {
+            font-size: clamp(0.6rem, 1.5vw, 0.875rem);
+            margin-top: 2px;
+        }
+        
+        .kampanj-font {
+            font-family: 'Teko', sans-serif;
+            text-transform: uppercase;
+        }
+        
+        .product-name-container {
+            height: auto;
+            min-height: 36px;
+            max-height: 54px; /* Allow two lines of text */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            padding: 2px 4px;
+        }
+        
+        .product-name {
+            font-weight: bold;
+            font-size: 0.875rem;
+            line-height: 1.2;  
+            word-break: break-word;
+            letter-spacing: -0.5px;
+            text-align: center; /* Reverted to original */
+            display: -webkit-box;
+            -webkit-box-orient: vertical;
+            -webkit-line-clamp: 2;
+            line-clamp: 2;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        /* Improved remark tag */
+        .remark-tag {
+            max-width: 90%;
+            word-break: break-word;
+            hyphens: auto;
+            line-height: 1.1;
+        }
+
+        /* Brand and Origin Styles */
+        .brand-origin-container { /* For Promotion Mode */
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 4px;
+            font-size: 12px;
+            color: black;
+            text-shadow: none;
+        }
+        .origin-container { /* For New Arrivals Mode */
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 4px;
+        }
+        .brand-tag { /* For New Arrivals Mode */
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            z-index: 3;
+            background-color: rgba(255, 255, 255, 0.85);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+            color: black;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
+        .origin-items-container {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            flex-wrap: wrap;
+        }
+        .origin-flag {
+            width: 20px;
+            height: auto;
+            border-radius: 2px;
+            box-shadow: 0 0 2px rgba(0,0,0,0.2);
+        }
+
+        /* Tab style */
+        .tab {
+            display: inline-block;
+            padding: 8px 16px;
+            cursor: pointer;
+            border-radius: 4px 4px 0 0;
+            background-color: #e2e8f0;
+            margin-right: 4px;
+            font-weight: 500;
+        }
+        
+        .tab.active {
+            background-color: #4f46e5;
+            color: white;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Improved print style */
+        @media print {
+            * {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+            
+            body {
+                background-color: white !important;
+                margin: 0;
+            }
+            
+            .control-panel, .print-button-container {
+                display: none !important;
+            }
+            
+            #preview {
+                padding: 0 !important;
+                margin: 0 !important;
+                overflow: visible !important;
+                transform: scale(1) !important; /* Reset zoom for printing */
+            }
+            
+            .page {
+                margin: 0;
+                box-shadow: none;
+                border: none;
+                page-break-after: always;
+                page-break-inside: avoid;
+                height: 297mm;
+            }
+            
+            .page:last-child {
+                page-break-after: avoid;
+            }
+            
+            .product-card {
+                break-inside: avoid;
+                page-break-inside: avoid;
+            }
+            
+            @page {
+                size: A4;
+                margin: 0;
+            }
+        }
+        
+        /* Loading state style */
+        .loading {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+        
+        .loading::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 20px;
+            height: 20px;
+            margin: -10px 0 0 -10px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Enhanced control panel style */
+        .control-panel {
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            border-radius: 12px;
+            margin: 1rem;
+            padding: 1.5rem;
+            max-height: calc(100vh - 2rem);
+            overflow-y: auto;
+        }
+        
+        .control-panel h1 {
+            color: #1e40af;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.05);
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 2px solid rgba(30, 64, 175, 0.2);
+        }
+        
+        .control-section {
+            background: white;
+            border-radius: 10px;
+            padding: 1.25rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .control-section:hover {
+            box-shadow: 0 4px 6px rgba(0,0,0,0.08);
+            transform: translateY(-2px);
+        }
+        
+        .control-section h2 {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: #1e40af;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+        }
+        
+        .control-section h2::before {
+            content: "";
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background: #1e40af;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        
+        .file-upload-label {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.5rem 1rem;
+            background: linear-gradient(to right, #1e40af, #3b82f6);
+            color: white;
+            border-radius: 6px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .file-upload-label:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+        
+        .file-upload-label:active {
+            transform: translateY(0);
+        }
+        
+        .file-info {
+            display: inline-block;
+            margin-left: 0.75rem;
+            padding: 0.25rem 0.5rem;
+            background: rgba(30, 64, 175, 0.1);
+            border-radius: 4px;
+            color: #1e40af;
+            font-size: 0.875rem;
+        }
+        
+        .input-field {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            background-color: white;
+            transition: all 0.2s;
+        }
+        
+        .input-field:focus {
+            outline: none;
+            border-color: #1e40af;
+            box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.1);
+        }
+
+        .rich-text-editor {
+            height: 120px;
+            overflow-y: auto;
+        }
+
+        .toolbar {
+            border-bottom: 1px solid #e2e8f0;
+            padding-bottom: 8px;
+            margin-bottom: 8px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .toolbar-btn {
+            border: 1px solid #d1d5db;
+            background-color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .toolbar-btn:hover {
+            background-color: #f3f4f6;
+        }
+        .toolbar-select {
+             border: 1px solid #d1d5db;
+            background-color: white;
+            padding: 4px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .toolbar-color {
+            border: 1px solid #d1d5db;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            border-radius: 4px;
+            cursor: pointer;
+            background-color: white;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(to right, #1e40af, #3b82f6);
+            color: white;
+            font-weight: 600;
+            padding: 0.75rem 1.5rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            border: none;
+            width: 100%;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+        
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+        
+        .status-message {
+            padding: 0.75rem;
+            border-radius: 6px;
+            margin-bottom: 0.5rem;
+            font-size: 0.875rem;
+            display: flex;
+            align-items: center;
+        }
+        
+        .status-message.info {
+            background: rgba(66, 153, 225, 0.1);
+            color: #2b6cb0;
+            border-left: 4px solid #4299e1;
+        }
+        
+        .status-message.success {
+            background: rgba(47, 179, 123, 0.1);
+            color: #2f855a;
+            border-left: 4px solid #38a169;
+        }
+        
+        .status-message.warning {
+            background: rgba(237, 137, 54, 0.1);
+            color: #c05621;
+            border-left: 4px solid #ed8936;
+        }
+        
+        .status-message.error {
+            background: rgba(229, 62, 62, 0.1);
+            color: #c53030;
+            border-left: 4px solid #e53e3e;
+        }
+        
+        .status-icon {
+            margin-right: 0.75rem;
+            font-weight: bold;
+        }
+        
+        #downloadTemplateBtn {
+            color: #1e40af;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        
+        #downloadTemplateBtn:hover {
+            color: #3b82f6;
+            text-decoration: underline;
+        }
+
+        #preview {
+            transform-origin: top center;
+            transition: transform 0.2s ease-in-out;
+        }
+    </style>
+</head>
+<body class="flex flex-col md:flex-row h-screen">
+
+    <div class="control-panel w-full md:w-1/4 lg:w-1/5 bg-white shadow-lg overflow-y-auto">
+        <h1 class="text-2xl font-bold mb-6">Catalog Generator</h1>
+        
+        <div class="space-y-6">
+            <div class="control-section">
+                <h2>Step 1: Upload Product Information</h2>
+                <div class="flex items-center">
+                    <label for="excelFile" class="file-upload-label">
+                        Choose File
+                    </label>
+                    <input type="file" id="excelFile" accept=".xlsx, .xls" class="hidden">
+                    <span id="excelFileName" class="file-info">No file chosen</span>
+                </div>
+                <button id="downloadTemplateBtn" class="mt-2 w-full text-sm">Download Template</button>
+                <p class="mt-1 text-xs text-gray-500">Use the 'page' column to assign products to specific pages. The tool will automatically adjust the layout for 1-9 products per page.</p>
+            </div>
+
+            <div class="control-section">
+                <h2>Step 2: Upload Product Pictures</h2>
+                 <div class="flex items-center">
+                    <label for="imageFiles" class="file-upload-label">
+                        Choose Files
+                    </label>
+                    <input type="file" id="imageFiles" multiple accept="image/*" class="hidden">
+                    <span id="imageFilesName" class="file-info">No files chosen</span>
+                </div>
+                <p class="mt-1 text-xs text-gray-500">Image filename must match 'SKU'. Recommended size 800x800 pixels, max 2MB.</p>
+            </div>
+
+            <div class="control-section">
+                <h2>Step 3: Customize Configuration</h2>
+                <input type="text" id="promoTime" placeholder="Promotion Date (e.g., May Special)" class="input-field" value="July 2025 Special">
+                
+                <div class="mt-2">
+                    <div class="flex border-b border-gray-200">
+                        <div class="tab active" data-tab="promotion">Promotion</div>
+                        <div class="tab" data-tab="new-arrivals">New Arrivals</div>
+                    </div>
+                    
+                    <div class="tab-content active" id="promotion-content">
+                        <input type="text" id="promoText" placeholder="Promotion Title (e.g., Kampanj)" class="mt-2 input-field" value="Kampanj">
+                    </div>
+                    
+                    <div class="tab-content" id="new-arrivals-content">
+                        <input type="text" id="newArrivalsText" placeholder="New Arrivals Title (e.g., NYHETER)" class="mt-2 input-field" value="NYHETER">
+                    </div>
+                </div>
+            </div>
+
+            <div class="control-section">
+                <h2>Custom Footer Text</h2>
+                <div class="toolbar">
+                    <button class="toolbar-btn" data-command="bold" title="Bold"><b>B</b></button>
+                    <button class="toolbar-btn" data-command="italic" title="Italic"><i>I</i></button>
+                    <button class="toolbar-btn" data-command="underline" title="Underline"><u>U</u></button>
+                    <select id="fontNameSelect" class="toolbar-select" title="Font Family">
+                        <option>Arial</option>
+                        <option>Verdana</option>
+                        <option>Georgia</option>
+                        <option>Times New Roman</option>
+                        <option>Courier New</option>
+                    </select>
+                    <select id="fontSizeSelect" class="toolbar-select" title="Font Size">
+                        <option value="1">8pt</option>
+                        <option value="2">10pt</option>
+                        <option value="3" selected>12pt</option>
+                        <option value="4">14pt</option>
+                        <option value="5">18pt</option>
+                        <option value="6">24pt</option>
+                        <option value="7">36pt</option>
+                    </select>
+                    <input type="color" id="fontColorPicker" class="toolbar-color" title="Font Color">
+                </div>
+                <div id="footerText" contenteditable="true" class="input-field rich-text-editor"><b>CTFOOD STOCKHOLM:</b> 08 581 658 80 | order.sth@ctfood.se | www.ctfood.se<br>Med reservation för slutförsäljning och tryckfel. Priserna är angivna svenska kronor exkl. moms. Leveransvillkor fritt vårt lager. Leveranstid: 1-3 dagar. Betalningsvillkor: 15 dagar netto efter godkänd sedvanlig kreditprovning</div>
+            </div>
+
+            <div class="control-section">
+                <h2>Customize Appearance</h2>
+                <p class="mt-1 mb-2 text-xs text-gray-500">Tip: Name origin flags after the country (e.g., Thailand.png). Other images: Header Logo (400x100), Header BG (600x100 recommended), Page BG (1240x1754), Price Tag (100x100), Footer (100x100).</p>
+                
+                <!-- Product Image Area Background Color -->
+                <div class="mb-4">
+                    <label for="productImageAreaColor" class="block text-sm font-medium mb-2">Product Image Area Background Color</label>
+                    <input type="color" id="productImageAreaColor" class="w-full h-10 border border-gray-300 rounded" value="#D6E0EC">
+                </div>
+                
+                <!-- Products Per Page -->
+                <div class="mb-4">
+                    <label for="productsPerPage" class="block text-sm font-medium mb-2">Products Per Page</label>
+                    <select id="productsPerPage" class="w-full p-2 border border-gray-300 rounded">
+                        <option value="2">2 Products</option>
+                        <option value="4" selected>4 Products</option>
+                        <option value="6">6 Products</option>
+                    </select>
+                </div>
+                
+                <div class="space-y-2">
+                    <div class="flex items-center">
+                        <label for="logoFile" class="file-upload-label">Header Logo</label>
+                        <input type="file" id="logoFile" accept="image/*" class="hidden">
+                        <span id="logoFileName" class="file-info">No file chosen</span>
+                    </div>
+                    <div class="flex items-center">
+                        <label for="headerBackgroundFile" class="file-upload-label">Header BG</label>
+                        <input type="file" id="headerBackgroundFile" accept="image/*" class="hidden">
+                        <span id="headerBackgroundFileName" class="file-info">No file chosen</span>
+                    </div>
+                    <div class="flex items-center">
+                        <label for="backgroundFile" class="file-upload-label">Page BG</label>
+                        <input type="file" id="backgroundFile" accept="image/*" class="hidden">
+                        <span id="backgroundFileName" class="file-info">No file chosen</span>
+                    </div>
+                    <div class="flex items-center">
+                        <label for="priceTagFile" class="file-upload-label">Price Tag BG</label>
+                        <input type="file" id="priceTagFile" accept="image/*" class="hidden">
+                        <span id="priceTagFileName" class="file-info">No file chosen</span>
+                    </div>
+                    <div class="flex items-center">
+                        <label for="originFlagFiles" class="file-upload-label">Origin Flags</label>
+                        <input type="file" id="originFlagFiles" accept="image/*" class="hidden" multiple>
+                        <span id="originFlagFilesName" class="file-info">No file chosen</span>
+                    </div>
+                    <div class="flex items-center">
+                        <label for="footerLogoFile" class="file-upload-label">Footer Image</label>
+                        <input type="file" id="footerLogoFile" accept="image/*" class="hidden">
+                        <span id="footerLogoFileName" class="file-info">No file chosen</span>
+                    </div>
+                    <div class="flex items-center">
+                        <label for="footerImageFile" class="file-upload-label">Footer Image (replaces fortune cookie)</label>
+                        <input type="file" id="footerImageFile" accept="image/*" class="hidden">
+                        <span id="footerImageFileName" class="file-info">No file chosen (using default fortune cookie)</span>
+                    </div>
+                    <div class="flex items-center">
+                        <label for="bannerImageFile" class="file-upload-label">Header Banner Image</label>
+                        <input type="file" id="bannerImageFile" accept="image/*" class="hidden">
+                        <span id="bannerImageFileName" class="file-info">No file chosen (using default banner)</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="control-section">
+            <h2>Zoom Preview</h2>
+            <div class="flex items-center space-x-2">
+                <button id="zoomOutBtn" class="p-2 border rounded-md cursor-pointer">-</button>
+                <input type="range" id="zoomSlider" min="50" max="150" value="100" class="w-full cursor-pointer">
+                <button id="zoomInBtn" class="p-2 border rounded-md cursor-pointer">+</button>
+            </div>
+            <div class="text-center mt-1 text-sm text-gray-600"><span id="zoomValue">100</span>%</div>
+        </div>
+
+        <div id="status" class="mt-6 space-y-2"></div>
+
+        <div class="print-button-container mt-6">
+             <button id="printBtn" class="btn-primary hidden">
+                Print or Save as PDF
+            </button>
+        </div>
+    </div>
+
+    <div id="preview" class="flex-1 p-6 overflow-y-auto">
+        </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // Global variables to store data
+        let productData = [];
+        let productImages = {};
+        let originImages = {};
+        let backgroundUrl = 'images/test.png';
+        let logoUrl = '';
+        let priceTagUrl = '';
+        let footerLogoUrl = '';
+        let headerBackgroundUrl = '';
+        let footerImageUrl = '';
+        let bannerImageUrl = '';
+        let currentTab = 'promotion';
+        let userHasUploaded = false;
+        
+        // Background overlay settings
+        let backgroundOverlayColor = '#8B4513';
+        let backgroundOverlayOpacity = 30;
+        let gradientOverlayColor = '#ffffff';
+        let gradientOverlayOpacity = 60;
+        let enableGradientOverlay = false;
+        let productImageAreaColor = '#D6E0EC';
+        let maxProductsPerPage = 4;
+        
+        // Page layout settings
+        let pageLayouts = {
+            1: '2x2',
+            2: '2x2', 
+            3: '2x2'
+        };
+        
+        // Sample data with default images
+        const sampleProductData = [
+            { page: 1, sku: '1120', name: 'Lee Kum Kee Double Deluxe Soy Sauce', size: '500ml', brand: 'Lee Kum Kee', origin: 'Hong Kong', price: 89.90, bbd: '2026-12-31', unit: 'st', remark: 'Premium' },
+            { page: 1, sku: '1122', name: 'Kungsörnen Skimmed Milk Powder', size: '10kg', brand: 'Kungsörnen', origin: 'Sweden', price: 299.90, bbd: '2026-06-30', unit: 'st', remark: 'Bulk' },
+            { page: 1, sku: '1126', name: 'Gold Kili Ginseng Chrysanthemum Drink', size: '180g', brand: 'Gold Kili', origin: 'Singapore', price: 149.90, bbd: '2026-01-15', unit: 'st', remark: 'Natural' },
+            { page: 1, sku: '1134', name: 'Chaokoh Coconut Milk', size: '2900ml', brand: 'Chaokoh', origin: 'Thailand', price: 79.90, bbd: '2025-10-20', unit: 'st', remark: 'Hot Sale' },
+            { page: 1, sku: '1120', name: 'Premium Soy Sauce', size: '500ml', brand: 'Lee Kum Kee', origin: 'Hong Kong', price: 89.90, bbd: '2026-12-31', unit: 'st', remark: 'Premium' },
+            { page: 1, sku: '1122', name: 'Organic Milk Powder', size: '10kg', brand: 'Kungsörnen', origin: 'Sweden', price: 299.90, bbd: '2026-06-30', unit: 'st', remark: 'Bulk' },
+        ];
+        const sampleProductImages = {
+            '1120': 'images/1120.png',
+            '1122': 'images/1122.png',
+            '1126': 'images/1126.png',
+            '1134': 'images/1134.png',
+        };
+        const sampleOriginImages = {
+            'Hong Kong': 'images/CTFood biglogo (1).png',
+            'Sweden': 'images/CTFood biglogo (1).png',
+            'Singapore': 'images/CTFood biglogo (1).png',
+            'Thailand': 'images/CTFood biglogo (1).png',
+        };
+        
+        // Load initial preview with sample data
+        function loadInitialPreview() {
+            if (!userHasUploaded) {
+                productData = sampleProductData;
+                productImages = sampleProductImages;
+                originImages = sampleOriginImages;
+                renderPreview();
+            }
+        }
+
+        // DOM element references
+        const excelFileInput = document.getElementById('excelFile');
+        const imageFilesInput = document.getElementById('imageFiles');
+        const backgroundFileInput = document.getElementById('backgroundFile');
+        const logoFileInput = document.getElementById('logoFile');
+        const priceTagFileInput = document.getElementById('priceTagFile');
+        const originFlagFilesInput = document.getElementById('originFlagFiles');
+        const footerLogoFileInput = document.getElementById('footerLogoFile');
+        const headerBackgroundFileInput = document.getElementById('headerBackgroundFile');
+        const footerImageFileInput = document.getElementById('footerImageFile');
+        const bannerImageFileInput = document.getElementById('bannerImageFile');
+        const productImageAreaColorInput = document.getElementById('productImageAreaColor');
+        const productsPerPageSelect = document.getElementById('productsPerPage');
+        const promoTimeInput = document.getElementById('promoTime');
+        const promoTextInput = document.getElementById('promoText');
+        const newArrivalsTextInput = document.getElementById('newArrivalsText');
+        const footerTextInput = document.getElementById('footerText');
+        const printBtn = document.getElementById('printBtn');
+        const previewArea = document.getElementById('preview');
+        const statusDiv = document.getElementById('status');
+        const downloadTemplateBtn = document.getElementById('downloadTemplateBtn');
+        
+        // Tab elements
+        const tabs = document.querySelectorAll('.tab');
+        const tabContents = document.querySelectorAll('.tab-content');
+
+        // Zoom controls
+        const zoomSlider = document.getElementById('zoomSlider');
+        const zoomValueSpan = document.getElementById('zoomValue');
+        const zoomInBtn = document.getElementById('zoomInBtn');
+        const zoomOutBtn = document.getElementById('zoomOutBtn');
+        
+        // Tab switching functionality
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                const tabName = tab.getAttribute('data-tab');
+                currentTab = tabName;
+                tabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                tabContents.forEach(content => content.classList.remove('active'));
+                document.getElementById(`${tabName}-content`).classList.add('active');
+                renderPreview();
+            });
+        });
+
+        // --- Start of Zoom Functionality ---
+        function updateZoom(value) {
+            const zoomLevel = Math.max(50, Math.min(150, value)); // Clamp value between 50 and 150
+            if (previewArea) previewArea.style.transform = `scale(${zoomLevel / 100})`;
+            if (zoomValueSpan) zoomValueSpan.textContent = zoomLevel;
+            if (zoomSlider) zoomSlider.value = zoomLevel;
+        }
+
+        if (zoomSlider) {
+            zoomSlider.addEventListener('input', (e) => {
+                updateZoom(parseInt(e.target.value, 10));
+            });
+        }
+
+        if (zoomInBtn) {
+            zoomInBtn.addEventListener('click', () => {
+                const currentZoom = parseInt(zoomSlider.value, 10);
+                updateZoom(currentZoom + 10);
+            });
+        }
+
+        if (zoomOutBtn) {
+            zoomOutBtn.addEventListener('click', () => {
+                const currentZoom = parseInt(zoomSlider.value, 10);
+                updateZoom(currentZoom - 10);
+            });
+        }
+        // --- End of Zoom Functionality ---
+
+        // Rich text editor toolbar
+        const toolbar = document.querySelector('.toolbar');
+        toolbar.addEventListener('click', (e) => {
+            const command = e.target.closest('[data-command]')?.dataset.command;
+            if (command) {
+                 e.preventDefault();
+                 document.execCommand(command, false, null);
+                 footerTextInput.focus();
+            }
+        });
+        
+        const fontNameSelect = document.getElementById('fontNameSelect');
+        const fontSizeSelect = document.getElementById('fontSizeSelect');
+        const fontColorPicker = document.getElementById('fontColorPicker');
+
+        fontNameSelect.addEventListener('change', (e) => {
+            document.execCommand('fontName', false, e.target.value);
+            footerTextInput.focus();
+        });
+        fontSizeSelect.addEventListener('change', (e) => {
+            document.execCommand('fontSize', false, e.target.value);
+            footerTextInput.focus();
+        });
+        fontColorPicker.addEventListener('input', (e) => {
+            document.execCommand('foreColor', false, e.target.value);
+            footerTextInput.focus();
+        });
+        
+        function addStatusMessage(text, type = 'info') {
+            if (!statusDiv) return;
+            const div = document.createElement('div');
+            const typeClasses = {
+                error: 'status-message error',
+                success: 'status-message success',
+                warning: 'status-message warning',
+                info: 'status-message info'
+            };
+            const icons = { error: '⚠', success: '✓', warning: '⚠', info: 'ℹ' };
+            div.className = typeClasses[type] || typeClasses.info;
+            div.innerHTML = `<span class="status-icon">${icons[type] || icons.info}</span>${text}`;
+            statusDiv.appendChild(div);
+        }
+        
+        function clearStatus() {
+            if (statusDiv) statusDiv.innerHTML = '';
+        }
+        
+        window.addEventListener('unhandledrejection', event => {
+            console.error('Unhandled Rejection:', event.reason);
+            addStatusMessage('An unknown error occurred. Please check your files or refresh the page.', 'error');
+        });
+
+        window.onerror = (message, source, lineno, colno, error) => {
+            console.error('Global Error:', { message, source, lineno, colno, error });
+            addStatusMessage('A script error occurred. Please refresh the page and try again.', 'error');
+        };
+
+        function debounce(func, delay) {
+            let timeout;
+            return function(...args) {
+                clearTimeout(timeout);
+                timeout = setTimeout(() => func.apply(this, args), delay);
+            };
+        }
+        
+        function hexToRgb(hex) {
+            const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+            return result ? {
+                r: parseInt(result[1], 16),
+                g: parseInt(result[2], 16),
+                b: parseInt(result[3], 16)
+            } : null;
+        }
+        
+        // Update product image area background color
+        function updateProductImageAreaColor() {
+            const productImageAreas = document.querySelectorAll('.product-image-area');
+            productImageAreas.forEach(area => {
+                area.style.backgroundColor = productImageAreaColor;
+            });
+        }
+
+        function adjustNameFontSizes() {
+            document.querySelectorAll('.product-name-container').forEach(container => {
+                const nameElement = container.querySelector('.product-name');
+                if (!nameElement) return;
+                nameElement.style.fontSize = '0.875rem';
+                let currentFontSize = 14;
+                while (nameElement.scrollHeight > container.clientHeight && currentFontSize > 8) {
+                    currentFontSize--;
+                    nameElement.style.fontSize = currentFontSize + 'px';
+                }
+            });
+        }
+
+        function adjustPriceFontSizes() {
+            document.querySelectorAll('.price-tag').forEach(container => {
+                const priceNumber = container.querySelector('.price-number');
+                if (!priceNumber) return;
+                priceNumber.style.fontSize = '1.25rem';
+                let currentFontSize = 20;
+                while (priceNumber.scrollWidth > container.clientWidth * 0.85 && currentFontSize > 10) {
+                    currentFontSize--;
+                    priceNumber.style.fontSize = currentFontSize + 'px';
+                }
+            });
+        }
+        
+        function adjustRemarkFontSizes() {
+            document.querySelectorAll('.remark-tag').forEach(remarkElement => {
+                const container = remarkElement.parentElement;
+                if (!container) return;
+                remarkElement.style.fontSize = '0.75rem';
+                let currentFontSize = 12;
+                while (remarkElement.scrollWidth > container.clientWidth * 0.85 && currentFontSize > 8) {
+                    currentFontSize--;
+                    remarkElement.style.fontSize = currentFontSize + 'px';
+                }
+            });
+        }
+
+        function formatPrice(price) {
+            const num = parseFloat(price || 0);
+            return num.toFixed(2).replace('.', ',');
+        }
+
+        function normalizeData(data) {
+            const filteredData = data.filter(row => (row.SKU || row.sku) && String(row.SKU || row.sku).trim() !== '');
+            const standardKeys = ['page', 'sku', 'name', 'size', 'brand', 'origin', 'price', 'bbd', 'unit', 'remark'];
+            return filteredData.map(row => {
+                const newRow = {};
+                const rowKeys = Object.keys(row);
+                for (const stdKey of standardKeys) {
+                    const foundKey = rowKeys.find(rowKey => rowKey.toLowerCase() === stdKey);
+                    newRow[stdKey] = foundKey ? row[foundKey] : '';
+                }
+                return newRow;
+            });
+        }
+
+        const renderPreview = () => {
+            if (productData.length === 0 && userHasUploaded) {
+                previewArea.innerHTML = `<div class="flex items-center justify-center h-full border-2 border-dashed border-gray-300 rounded-lg"><div class="text-center"><svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true"><path vector-effect="non-scaling-stroke" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 13h6m-3-3v6m-9 1V7a2 2 0 012-2h14a2 2 0 012 2v10a2 2 0 01-2 2H4a2 2 0 01-2-2z" /></svg><h3 class="mt-2 text-sm font-medium text-gray-900">Product Preview</h3><p class="mt-1 text-sm text-gray-500">Please upload the Excel and image files on the left to begin.</p></div></div>`;
+                printBtn.classList.add('hidden');
+                clearStatus();
+                return;
+            }
+
+            previewArea.classList.add('loading');
+            
+            setTimeout(() => {
+                try {
+                    previewArea.innerHTML = '';
+                    clearStatus();
+
+                    let matchedCount = 0;
+                    const missingImages = [];
+                    productData.forEach(product => {
+                        const productCode = product['sku'];
+                        if (productImages[productCode]) matchedCount++;
+                        else missingImages.push(productCode);
+                    });
+
+                    addStatusMessage(`Total ${productData.length} products, found ${matchedCount} matching images.`);
+                    if (missingImages.length > 0) {
+                        addStatusMessage(`Missing images for the following SKUs: ${missingImages.join(', ')}`, 'error');
+                    }
+
+                    const promoTime = promoTimeInput.value;
+                    const isPriceHidden = currentTab === 'new-arrivals';
+                    const newArrivalsText = newArrivalsTextInput.value || 'New Arrivals';
+                    const promoText = currentTab === 'promotion' ? (promoTextInput.value || 'Kampanj') : newArrivalsText;
+                    const totalPages = productData.reduce((max, p) => Math.max(max, parseInt(p.page) || 0), 0);
+
+                    for (let i = 1; i <= totalPages; i++) {
+                        const pageProducts = productData.filter(p => parseInt(p.page) === i);
+                        if (pageProducts.length === 0) continue;
+
+                    const page = document.createElement('div');
+                    page.className = 'page';
+                    if (backgroundUrl) page.style.backgroundImage = `url(${backgroundUrl})`;
+                    
+                    // Create overlay div
+                    const overlay = document.createElement('div');
+                    overlay.className = 'page-overlay';
+                    overlay.style.position = 'absolute';
+                    overlay.style.top = '0';
+                    overlay.style.left = '0';
+                    overlay.style.right = '0';
+                    overlay.style.bottom = '0';
+                    overlay.style.pointerEvents = 'none';
+                    overlay.style.zIndex = '1';
+                    const opacity = backgroundOverlayOpacity / 100;
+                    const rgb = hexToRgb(backgroundOverlayColor);
+                    page.appendChild(overlay);
+                    
+                    // Create gradient overlay
+                    const gradientOverlay = document.createElement('div');
+                    gradientOverlay.className = 'page-gradient-overlay';
+                    gradientOverlay.style.position = 'absolute';
+                    gradientOverlay.style.top = '0';
+                    gradientOverlay.style.left = '0';
+                    gradientOverlay.style.right = '0';
+                    gradientOverlay.style.bottom = '0';
+                    gradientOverlay.style.pointerEvents = 'none';
+                    gradientOverlay.style.zIndex = '2';
+                    if (enableGradientOverlay) {
+                        const gradientOpacity = gradientOverlayOpacity / 100;
+                        const gradientRgb = hexToRgb(gradientOverlayColor);
+                        gradientOverlay.style.background = `linear-gradient(180deg, rgba(${gradientRgb.r}, ${gradientRgb.g}, ${gradientRgb.b}, ${gradientOpacity}) 0%, transparent 100%)`;
+                        gradientOverlay.style.display = 'block';
+                    } else {
+                        gradientOverlay.style.display = 'none';
+                    }
+                    page.appendChild(gradientOverlay);
+
+                    const header = document.createElement('div');
+                    header.className = 'page-header flex items-center justify-between pb-6 pl-6';
+                    header.style.position = 'relative';
+                    header.style.zIndex = '10';
+
+                        // Left side - CT FOOD Logo
+                        const logoContainer = document.createElement('div');
+                        logoContainer.className = 'flex items-center';
+                        logoContainer.innerHTML = `<img src="images/CTFood biglogo (1).png" alt="CT FOOD Logo" style="max-height: 60px; max-width: 200px; object-fit: contain;">`;
+
+                        // Right side - Oriental decorations and promo text
+                        const rightContainer = document.createElement('div');
+                        rightContainer.className = 'flex items-center space-x-4';
+                        
+                        // Banner image
+                        const bannerContainer = document.createElement('div');
+                        bannerContainer.className = 'header-banner-container';
+                        const bannerImageSrc = bannerImageUrl || 'images/banner_top.png';
+                        bannerContainer.innerHTML = `
+                            <img src="${bannerImageSrc}" alt="Promotional Banner" style="max-height: 1200px; max-width: 300px; object-fit: contain;">
+                        `;
+                        
+                        rightContainer.appendChild(bannerContainer);
+
+                        header.appendChild(logoContainer);
+                        header.appendChild(rightContainer);
+
+                        const content = document.createElement('div');
+                        content.className = 'page-content';
+                        const numProducts = pageProducts.length;
+                        content.setAttribute('data-product-count', numProducts);
+                        
+                        // Limit products per page based on user selection
+                        const limitedPageProducts = pageProducts.slice(0, maxProductsPerPage);
+                        const actualProductCount = limitedPageProducts.length;
+                        
+                        let cardHeight, cardWidth;
+                        if (actualProductCount === 1) { cardWidth = '60%'; cardHeight = '500px'; } 
+                        else if (actualProductCount === 2) { cardWidth = 'calc(50% - 5mm)'; cardHeight = '400px'; } 
+                        else if (actualProductCount === 3) { cardWidth = 'calc(33.333% - 7mm)'; cardHeight = '380px'; } 
+                        else if (actualProductCount === 4) { cardWidth = 'calc(50% - 5mm)'; cardHeight = '350px'; } 
+                        else if (actualProductCount === 5) { cardWidth = 'calc(33.333% - 7mm)'; cardHeight = '300px'; } 
+                        else if (actualProductCount === 6) { cardWidth = 'calc(33.333% - 7mm)'; cardHeight = '280px'; } 
+                        else { cardWidth = 'calc(33.333% - 7mm)'; cardHeight = '160px'; }
+
+                        limitedPageProducts.forEach(product => {
+                            const card = document.createElement('div');
+                            card.className = 'product-card';
+                            card.style.width = cardWidth;
+                            card.style.height = cardHeight;
+                            
+                            const imageUrl = productImages[product['sku']] || 'images/1120.png';
+                            const bbdValue = product['bbd'];
+                            const remarkValue = product['remark'];
+                            const remarkOnImageHTML = remarkValue ? `<div class="remark-tag absolute bottom-1 right-1 bg-black bg-opacity-60 text-yellow-300 text-xs font-bold px-3 py-1 rounded whitespace-nowrap">${remarkValue}</div>` : ``;
+
+                            if (currentTab === 'new-arrivals') {
+                                card.style.fontFamily = "'Calibri', sans-serif";
+                                
+                                const brand = product['brand'] || '';
+                                const brandHTML = brand ? `<div class="brand-tag">${brand}</div>` : '';
+
+                                const originValue = product['origin'] || '';
+                                let originFlagsHTML = '';
+                                if (originValue) {
+                                    const origins = originValue.split(',').map(o => o.trim());
+                                    const originElements = origins.map(origin => {
+                                        const imageKey = Object.keys(originImages).find(k => k.toLowerCase() === origin.toLowerCase());
+                                        const originImageUrl = imageKey ? originImages[imageKey] : null;
+                                        if (originImageUrl) {
+                                            return `<img src="${originImageUrl}" alt="${origin}" class="origin-flag" title="${origin}">`;
+                                        }
+                                        return '';
+                                    }).filter(Boolean).join('');
+                                    originFlagsHTML = `<div class="origin-items-container">${originElements}</div>`;
+                                }
+                                const originContainerHTML = `<div class="origin-container">${originFlagsHTML}</div>`;
+                                const originText = product['origin'] || '';
+
+                                card.innerHTML = `
+                                    <div class="flex-grow flex flex-col min-h-0">
+                                        <div class="product-image-area" style="flex-basis: 65%;">
+                                            ${brandHTML}
+                                            ${originContainerHTML}
+                                            <div class="absolute inset-0 flex items-center justify-center p-2">
+                                                <img src="${imageUrl}" alt="${product['name']}" class="product-image" onerror="this.src='https://placehold.co/200x200/e2e8f0/333333?text=Image failed to load'">
+                                            </div>
+                                        </div>
+                                        <div class="product-details-area flex flex-col justify-center mx-4 py-1">
+                                            <div class="text-left space-y-1">
+                                                <h3 class="product-name" style="text-align: left;" title="${product['name']}">${product['name'] || ''}</h3>
+                                                <p class="text-sm text-gray-800" title="#${product['sku']}: ${product['size'] || ''}">#${product['sku'] || ''}: ${product['size'] || ''}</p>
+                                                <p class="text-xs text-gray-600 truncate" title="Origin: ${originText}">${originText}</p>
+                                            </div>
+                                        </div>
+                                    </div>`;
+                            } else { // Promotion Mode
+                                card.style.fontFamily = "'Segoe Print', cursive";
+
+                                const price = formatPrice(product['price']);
+                                const unit = product['unit'] || '';
+                                const priceTagStyle = priceTagUrl ? `style="background-image: url('${priceTagUrl}'); background-color: transparent;"` : '';
+                                const priceTagHTML = `<div class="price-tag" ${priceTagStyle}><img src="images/Group 1.png" alt="Price tag background"><div class="price-number">${price}:-</div><div class="price-unit">/ ${unit || ''}</div></div>`;
+
+                                const brand = product['brand'] || '';
+                                const originValue = product['origin'] || '';
+                                let originDisplayHTML = '';
+
+                                if (originValue) {
+                                    const origins = originValue.split(',').map(o => o.trim());
+                                    const originElements = origins.map(origin => {
+                                        const imageKey = Object.keys(originImages).find(k => k.toLowerCase() === origin.toLowerCase());
+                                        const originImageUrl = imageKey ? originImages[imageKey] : null;
+                                        if (originImageUrl) {
+                                            return `<img src="${originImageUrl}" alt="${origin}" class="origin-flag" title="${origin}">`;
+                                        } else {
+                                            return `<span class="origin-text">${origin}</span>`;
+                                        }
+                                    }).join('');
+                                    originDisplayHTML = `<div class="origin-items-container">${originElements}</div>`;
+                                }
+                                
+                                const brandAndOriginHTML = `<div class="brand-origin-container">${brand ? `<h4 class="font-semibold">${brand}</h4>` : ''}${originDisplayHTML}</div>`;
+
+                                card.innerHTML = `
+                                    ${priceTagHTML}
+                                    <div class="flex-grow flex flex-col min-h-0">
+                                        <div class="product-image-area" style="flex-basis: 65%;">
+                                            ${brandAndOriginHTML}
+                                            <div class="absolute inset-0 flex items-center justify-center p-2">
+                                                <img src="${imageUrl}" alt="${product['name']}" class="product-image" onerror="this.src='https://placehold.co/200x200/e2e8f0/333333?text=Image failed to load'">
+                                            </div>
+                                        </div>
+                                        <div class="product-details-area flex flex-col justify-between text-center p-2" style="flex-basis: 35%;">
+                                            <div class="flex-grow">
+                                                <p class="text-sm font-bold text-black underline truncate" style="letter-spacing: -0.5px;" title="${product['sku']}">${product['sku'] || ''}</p>
+                                                <div class="product-name-container">
+                                                    <h3 class="product-name" style="text-align: center;" title="${product['name']}">${product['name'] || ''}</h3>
+                                                </div>
+                                                <p class="text-xs text-gray-600 truncate" style="letter-spacing: -0.5px;" title="${product['size']}">${product['size'] || ''}</p>
+                                            </div>
+                                        </div>
+                                    </div>`;
+                            }
+                            content.appendChild(card);
+                        });
+
+                        const footer = document.createElement('div');
+                        footer.className = 'page-footer mt-auto pt-4 pb-4 px-24';
+                        footer.style.position = 'relative';
+                        footer.style.zIndex = '10';
+                        
+                        const footerTextValue = footerTextInput.innerHTML;
+                        const footerMainContentHTML = `
+                            <div class="flex items-start justify-between">
+                                <!-- Left side - Fortune Cookie with CT FOOD logo -->
+                                <div class="flex items-center">
+                                    <!-- Fortune Cookie or Custom Footer Image -->
+                                    <div class="relative">
+                                        <img src="${footerImageUrl || 'images/fortune_cookie.png'}" alt="CT FOOD Footer Image" style="height: 70px; width: auto; object-fit: contain;">
+                                    </div>
+                                </div>
+                                
+                                <!-- Right side - Contact info and terms -->
+                                <div class="flex-1 ml-2">
+                                    <div class="text-blue-800 font-semibold text-xs mb-0.5" style="font-size: 10px;">
+                                        STOCKHOLM: 08 581 658 80 | order.sth@ctfood.se | www.ctfood.se
+                                    </div>
+                                    <div class="w-full h-px bg-blue-300 mb-1"></div>
+                                    <div class="text-blue-800 text-xs leading-tight" style="font-size: 9px;">
+                                        ${footerTextValue}
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        footer.innerHTML = footerMainContentHTML;
+
+                        page.appendChild(header);
+                        page.appendChild(content);
+                        page.appendChild(footer);
+                        previewArea.appendChild(page);
+                    }
+
+                    previewArea.classList.remove('loading');
+                    setTimeout(() => {
+                        if (currentTab === 'promotion') {
+                           adjustNameFontSizes();
+                        }
+                        adjustPriceFontSizes();
+                        adjustRemarkFontSizes();
+                        updateProductImageAreaColor();
+                    }, 100);
+                    printBtn.classList.remove('hidden');
+                } catch (error) {
+                    console.error('Rendering error:', error);
+                    previewArea.classList.remove('loading');
+                    addStatusMessage(`The following rendering error occurred: ${error.message}`, 'error');
+                }
+            }, 50);
+        };
+        
+        async function handleImageUpload(file, skipCompression = false) {
+            userHasUploaded = true;
+            if (skipCompression) {
+                return URL.createObjectURL(file);
+            }
+            if (file.size > 2 * 1024 * 1024) {
+                addStatusMessage(`The image ${file.name} is too large (over 2MB) and was skipped.`, 'error');
+                return null;
+            }
+            const options = { maxSizeMB: 1, maxWidthOrHeight: 800, useWebWorker: false };
+            try {
+                if (typeof imageCompression === 'undefined') {
+                    console.warn('imageCompression library not loaded. Skipping compression.');
+                    return URL.createObjectURL(file);
+                }
+                const compressedFile = await imageCompression(file, options);
+                return URL.createObjectURL(compressedFile);
+            } catch (error) {
+                console.error("Image compression error: ", error);
+                addStatusMessage(`Image compression failed for the file ${file.name}. Using the original file.`, 'warning');
+                return URL.createObjectURL(file);
+            }
+        }
+
+        excelFileInput.addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            if (!file) {
+                document.getElementById('excelFileName').textContent = 'No file chosen';
+                return;
+            }
+            document.getElementById('excelFileName').textContent = file.name;
+            clearStatus();
+            addStatusMessage('Parsing Excel file...');
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, {type: 'array'});
+                    const jsonData = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
+                    productData = normalizeData(jsonData);
+                    addStatusMessage(`Excel parsed successfully with ${productData.length} products found.`, 'success');
+                    renderPreview();
+                } catch (error) {
+                    addStatusMessage(`Excel parsing failed with the following error: ${error.message}`, 'error');
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        });
+
+        async function processImageFiles(files, targetObject, nameSpan) {
+            if (files.length === 0) {
+                nameSpan.textContent = 'No files chosen';
+                return;
+            }
+            nameSpan.textContent = `${files.length} files selected`;
+            clearStatus();
+            addStatusMessage('Processing images...');
+            
+            Object.keys(targetObject).forEach(key => URL.revokeObjectURL(targetObject[key]));
+            for (const key in targetObject) { delete targetObject[key]; }
+
+            let processedCount = 0;
+            for (const file of files) {
+                try {
+                    const imageUrl = await handleImageUpload(file);
+                    if (imageUrl) {
+                        const fileName = file.name.split('.').slice(0, -1).join('.');
+                        targetObject[fileName] = imageUrl;
+                        processedCount++;
+                    }
+                } catch (error) {
+                    addStatusMessage(`Failed to process the following file: ${file.name}`, 'error');
+                }
+            }
+            addStatusMessage(`Images processed successfully: ${processedCount} out of ${files.length}`, 'success');
+            renderPreview();
+        }
+
+        imageFilesInput.addEventListener('change', async (event) => {
+            await processImageFiles(Array.from(event.target.files), productImages, document.getElementById('imageFilesName'));
+        });
+
+        originFlagFilesInput.addEventListener('change', async (event) => {
+            await processImageFiles(Array.from(event.target.files), originImages, document.getElementById('originFlagFilesName'));
+        });
+
+        async function setupImageInput(inputId, urlVariableSetter, imageTypeName, skipCompression = false) {
+            const input = document.getElementById(inputId);
+            input.addEventListener('change', async (event) => {
+                const file = event.target.files[0];
+                const fileNameSpan = document.getElementById(inputId + 'Name');
+                if (!file) {
+                    fileNameSpan.textContent = 'No file chosen';
+                    urlVariableSetter('');
+                    renderPreview();
+                    return;
+                }
+                fileNameSpan.textContent = file.name;
+                try {
+                    const url = await handleImageUpload(file, skipCompression);
+                    urlVariableSetter(url);
+                    renderPreview();
+                } catch (error) {
+                    addStatusMessage(`The ${imageTypeName} failed to load with the following error: ${error.message}`, 'error');
+                }
+            });
+        }
+
+        setupImageInput('backgroundFile', url => backgroundUrl = url, 'background image');
+        setupImageInput('logoFile', url => logoUrl = url, 'logo image');
+        setupImageInput('priceTagFile', url => priceTagUrl = url, 'price tag image');
+        setupImageInput('footerLogoFile', url => footerLogoUrl = url, 'footer logo image');
+        setupImageInput('headerBackgroundFile', url => headerBackgroundUrl = url, 'header background', true);
+        setupImageInput('footerImageFile', url => footerImageUrl = url, 'footer image');
+        setupImageInput('bannerImageFile', url => bannerImageUrl = url, 'banner image');
+
+        promoTimeInput.addEventListener('input', debounce(renderPreview, 300));
+        promoTextInput.addEventListener('input', debounce(renderPreview, 300));
+        newArrivalsTextInput.addEventListener('input', debounce(renderPreview, 300));
+        footerTextInput.addEventListener('input', debounce(renderPreview, 300));
+        
+        // Product image area background color control
+        productImageAreaColorInput.addEventListener('input', (e) => {
+            productImageAreaColor = e.target.value;
+            updateProductImageAreaColor();
+        });
+        
+        // Products per page control
+        productsPerPageSelect.addEventListener('change', (e) => {
+            maxProductsPerPage = parseInt(e.target.value);
+            renderPreview();
+        });
+
+        printBtn.addEventListener('click', () => window.print());
+
+        downloadTemplateBtn.addEventListener('click', () => {
+            const templateData = [{ page: 1, sku: '2327', name: 'Coconut Milk', size: '6x2900ml', brand: 'Aroy-D', origin: 'Thailand,Vietnam', price: 83.90, bbd: '2026-12-31', unit: 'st', remark: 'Hot Sale' }];
+            const ws = XLSX.utils.json_to_sheet(templateData);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'Products');
+            XLSX.writeFile(wb, 'catalog_template.xlsx');
+        });
+
+        // Load initial preview with sample data
+        loadInitialPreview();
+    });
+    </script>
+</body>
+</html>
