@@ -762,7 +762,7 @@
         let productData = [];
         let productImages = {};
         let originImages = {};
-        let backgroundUrl = 'images/test.png';
+        let backgroundUrl = './images/test.png';
         let logoUrl = '';
         let priceTagUrl = '';
         let footerLogoUrl = '';
@@ -798,16 +798,16 @@
             { page: 1, sku: '1122', name: 'Organic Milk Powder', size: '10kg', brand: 'Kungsörnen', origin: 'Sweden', price: 299.90, bbd: '2026-06-30', unit: 'st', remark: 'Bulk' },
         ];
         const sampleProductImages = {
-            '1120': 'images/1120.png',
-            '1122': 'images/1122.png',
-            '1126': 'images/1126.png',
-            '1134': 'images/1134.png',
+            '1120': './images/1120.png',
+            '1122': './images/1122.png',
+            '1126': './images/1126.png',
+            '1134': './images/1134.png',
         };
         const sampleOriginImages = {
-            'Hong Kong': 'images/CTFood biglogo (1).png',
-            'Sweden': 'images/CTFood biglogo (1).png',
-            'Singapore': 'images/CTFood biglogo (1).png',
-            'Thailand': 'images/CTFood biglogo (1).png',
+            'Hong Kong': './images/CTFood biglogo (1).png',
+            'Sweden': './images/CTFood biglogo (1).png',
+            'Singapore': './images/CTFood biglogo (1).png',
+            'Thailand': './images/CTFood biglogo (1).png',
         };
         
         // Load initial preview with sample data
@@ -1118,7 +1118,7 @@
                         // Left side - CT FOOD Logo
                         const logoContainer = document.createElement('div');
                         logoContainer.className = 'flex items-center';
-                        logoContainer.innerHTML = `<img src="images/CTFood biglogo (1).png" alt="CT FOOD Logo" style="max-height: 60px; max-width: 200px; object-fit: contain;">`;
+                        logoContainer.innerHTML = `<img src="./images/CTFood biglogo (1).png" alt="CT FOOD Logo" style="max-height: 60px; max-width: 200px; object-fit: contain;">`;
 
                         // Right side - Oriental decorations and promo text
                         const rightContainer = document.createElement('div');
@@ -1127,7 +1127,7 @@
                         // Banner image
                         const bannerContainer = document.createElement('div');
                         bannerContainer.className = 'header-banner-container';
-                        const bannerImageSrc = bannerImageUrl || 'images/banner_top.png';
+                        const bannerImageSrc = bannerImageUrl || './images/banner_top.png';
                         bannerContainer.innerHTML = `
                             <img src="${bannerImageSrc}" alt="Promotional Banner" style="max-height: 1200px; max-width: 300px; object-fit: contain;">
                         `;
@@ -1161,7 +1161,7 @@
                             card.style.width = cardWidth;
                             card.style.height = cardHeight;
                             
-                            const imageUrl = productImages[product['sku']] || 'images/1120.png';
+                            const imageUrl = productImages[product['sku']] || './images/1120.png';
                             const bbdValue = product['bbd'];
                             const remarkValue = product['remark'];
                             const remarkOnImageHTML = remarkValue ? `<div class="remark-tag absolute bottom-1 right-1 bg-black bg-opacity-60 text-yellow-300 text-xs font-bold px-3 py-1 rounded whitespace-nowrap">${remarkValue}</div>` : ``;
@@ -1212,7 +1212,7 @@
                                 const price = formatPrice(product['price']);
                                 const unit = product['unit'] || '';
                                 const priceTagStyle = priceTagUrl ? `style="background-image: url('${priceTagUrl}'); background-color: transparent;"` : '';
-                                const priceTagHTML = `<div class="price-tag" ${priceTagStyle}><img src="images/Group 1.png" alt="Price tag background"><div class="price-number">${price}:-</div><div class="price-unit">/ ${unit || ''}</div></div>`;
+                                const priceTagHTML = `<div class="price-tag" ${priceTagStyle}><img src="./images/Group 1.png" alt="Price tag background"><div class="price-number">${price}:-</div><div class="price-unit">/ ${unit || ''}</div></div>`;
 
                                 const brand = product['brand'] || '';
                                 const originValue = product['origin'] || '';
@@ -1269,7 +1269,7 @@
                                 <div class="flex items-center">
                                     <!-- Fortune Cookie or Custom Footer Image -->
                                     <div class="relative">
-                                        <img src="${footerImageUrl || 'images/fortune_cookie.png'}" alt="CT FOOD Footer Image" style="height: 70px; width: auto; object-fit: contain;">
+                                        <img src="${footerImageUrl || './images/fortune_cookie.png'}" alt="CT FOOD Footer Image" style="height: 70px; width: auto; object-fit: contain;">
                                     </div>
                                 </div>
                                 
