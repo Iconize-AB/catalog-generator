@@ -65,6 +65,16 @@
             overflow: hidden; /* Prevent content overflow */
         }
         
+        /* Special layout for 2 products - side by side large cards */
+        .page-content[data-product-count="2"] {
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            align-items: center;
+            gap: 20mm;
+            padding: 20mm 16mm;
+        }
+        
         /* Improved product card style */
         .product-card {
             border: 1px solid #e2e8f0;
@@ -681,12 +691,13 @@
                 
                 <!-- Products Per Page -->
                 <div class="mb-4">
-                    <label for="productsPerPage" class="block text-sm font-medium mb-2">Products Per Page</label>
+                    <label for="productsPerPage" class="block text-sm font-medium mb-2">Layout Preference</label>
                     <select id="productsPerPage" class="w-full p-2 border border-gray-300 rounded">
-                        <option value="2">2 Products</option>
-                        <option value="4" selected>4 Products</option>
-                        <option value="6">6 Products</option>
+                        <option value="2">2 Products Layout</option>
+                        <option value="4" selected>4 Products Layout</option>
+                        <option value="6">6 Products Layout</option>
                     </select>
+                    <p class="mt-1 text-xs text-gray-500">Note: Excel 'page' column determines actual products per page. This setting only affects layout when you have that many products.</p>
                 </div>
                 
                 <div class="space-y-2">
@@ -1124,12 +1135,20 @@
                         const rightContainer = document.createElement('div');
                         rightContainer.className = 'flex items-center space-x-4';
                         
-                        // Banner image
+                        // Banner image with text overlay
                         const bannerContainer = document.createElement('div');
-                        bannerContainer.className = 'header-banner-container';
-                        const bannerImageSrc = bannerImageUrl || '/banner_top.png';
+                        bannerContainer.className = 'header-banner-container relative';
+                        const bannerImageSrc = bannerImageUrl || '/Group 1 (6).png';
+                        const promoText = promoTimeInput.value || 'July 2025 Special';
                         bannerContainer.innerHTML = `
-                            <img src="${bannerImageSrc}" alt="Promotional Banner" style="max-height: 1200px; max-width: 300px; object-fit: contain;">
+                            <div class="relative inline-block">
+                                <img src="${bannerImageSrc}" alt="Promotional Banner" style="max-height: 1200px; max-width: 300px; object-fit: contain;">
+                                <div class="absolute inset-0 flex items-center justify-center">
+                                    <div class="text-white font-bold text-center" style="font-size: 24px; text-shadow: 2px 2px 4px rgba(0,0,0,0.8); font-family: 'Teko', sans-serif; text-transform: uppercase; letter-spacing: 1px;">
+                                        ${promoText}
+                                    </div>
+                                </div>
+                            </div>
                         `;
                         
                         rightContainer.appendChild(bannerContainer);
@@ -1139,21 +1158,21 @@
 
                         const content = document.createElement('div');
                         content.className = 'page-content';
-                        const numProducts = pageProducts.length;
-                        content.setAttribute('data-product-count', numProducts);
                         
-                        // Limit products per page based on user selection
-                        const limitedPageProducts = pageProducts.slice(0, maxProductsPerPage);
-                        const actualProductCount = limitedPageProducts.length;
+                        // Use all products assigned to this page from Excel, but respect maxProductsPerPage as layout preference
+                        const actualProductCount = pageProducts.length;
+                        const limitedPageProducts = pageProducts;
+                        content.setAttribute('data-product-count', actualProductCount);
                         
                         let cardHeight, cardWidth;
                         if (actualProductCount === 1) { cardWidth = '60%'; cardHeight = '500px'; } 
-                        else if (actualProductCount === 2) { cardWidth = 'calc(50% - 5mm)'; cardHeight = '400px'; } 
+                        else if (actualProductCount === 2) { cardWidth = '40%'; cardHeight = '500px'; } 
                         else if (actualProductCount === 3) { cardWidth = 'calc(33.333% - 7mm)'; cardHeight = '380px'; } 
                         else if (actualProductCount === 4) { cardWidth = 'calc(50% - 5mm)'; cardHeight = '350px'; } 
                         else if (actualProductCount === 5) { cardWidth = 'calc(33.333% - 7mm)'; cardHeight = '300px'; } 
                         else if (actualProductCount === 6) { cardWidth = 'calc(33.333% - 7mm)'; cardHeight = '280px'; } 
-                        else { cardWidth = 'calc(33.333% - 7mm)'; cardHeight = '160px'; }
+                        else if (actualProductCount <= 9) { cardWidth = 'calc(33.333% - 7mm)'; cardHeight = '250px'; } 
+                        else { cardWidth = 'calc(25% - 5mm)'; cardHeight = '200px'; }
 
                         limitedPageProducts.forEach(product => {
                             const card = document.createElement('div');
