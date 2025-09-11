@@ -626,10 +626,10 @@
                     <label for="imageFiles" class="file-upload-label">
                         Choose Files
                     </label>
-                    <input type="file" id="imageFiles" multiple accept="image/*" class="hidden">
+                    <input type="file" id="imageFiles" multiple accept="image/*,.jpg,.jpeg,.png,.gif,.webp" class="hidden">
                     <span id="imageFilesName" class="file-info">No files chosen</span>
                 </div>
-                <p class="mt-1 text-xs text-gray-500">Image filename must match 'SKU'. Recommended size 800x800 pixels, max 2MB.</p>
+                <p class="mt-1 text-xs text-gray-500">Image filename must match 'SKU'. Recommended size 800x800 pixels, max 10MB. Supports JPG, PNG, GIF, WebP.</p>
             </div>
 
             <div class="control-section">
@@ -703,42 +703,42 @@
                 <div class="space-y-2">
                     <div class="flex items-center">
                         <label for="logoFile" class="file-upload-label">Header Logo</label>
-                        <input type="file" id="logoFile" accept="image/*" class="hidden">
+                        <input type="file" id="logoFile" accept="image/*,.jpg,.jpeg,.png,.gif,.webp" class="hidden">
                         <span id="logoFileName" class="file-info">No file chosen</span>
                     </div>
                     <div class="flex items-center">
                         <label for="headerBackgroundFile" class="file-upload-label">Header BG</label>
-                        <input type="file" id="headerBackgroundFile" accept="image/*" class="hidden">
+                        <input type="file" id="headerBackgroundFile" accept="image/*,.jpg,.jpeg,.png,.gif,.webp" class="hidden">
                         <span id="headerBackgroundFileName" class="file-info">No file chosen</span>
                     </div>
                     <div class="flex items-center">
                         <label for="backgroundFile" class="file-upload-label">Page BG</label>
-                        <input type="file" id="backgroundFile" accept="image/*" class="hidden">
+                        <input type="file" id="backgroundFile" accept="image/*,.jpg,.jpeg,.png,.gif,.webp" class="hidden">
                         <span id="backgroundFileName" class="file-info">No file chosen</span>
                     </div>
                     <div class="flex items-center">
                         <label for="priceTagFile" class="file-upload-label">Price Tag BG</label>
-                        <input type="file" id="priceTagFile" accept="image/*" class="hidden">
+                        <input type="file" id="priceTagFile" accept="image/*,.jpg,.jpeg,.png,.gif,.webp" class="hidden">
                         <span id="priceTagFileName" class="file-info">No file chosen</span>
                     </div>
                     <div class="flex items-center">
                         <label for="originFlagFiles" class="file-upload-label">Origin Flags</label>
-                        <input type="file" id="originFlagFiles" accept="image/*" class="hidden" multiple>
+                        <input type="file" id="originFlagFiles" accept="image/*,.jpg,.jpeg,.png,.gif,.webp" class="hidden" multiple>
                         <span id="originFlagFilesName" class="file-info">No file chosen</span>
                     </div>
                     <div class="flex items-center">
                         <label for="footerLogoFile" class="file-upload-label">Footer Image</label>
-                        <input type="file" id="footerLogoFile" accept="image/*" class="hidden">
+                        <input type="file" id="footerLogoFile" accept="image/*,.jpg,.jpeg,.png,.gif,.webp" class="hidden">
                         <span id="footerLogoFileName" class="file-info">No file chosen</span>
                     </div>
                     <div class="flex items-center">
                         <label for="footerImageFile" class="file-upload-label">Footer Image (replaces fortune cookie)</label>
-                        <input type="file" id="footerImageFile" accept="image/*" class="hidden">
+                        <input type="file" id="footerImageFile" accept="image/*,.jpg,.jpeg,.png,.gif,.webp" class="hidden">
                         <span id="footerImageFileName" class="file-info">No file chosen (using default fortune cookie)</span>
                     </div>
                     <div class="flex items-center">
                         <label for="bannerImageFile" class="file-upload-label">Header Banner Image</label>
-                        <input type="file" id="bannerImageFile" accept="image/*" class="hidden">
+                        <input type="file" id="bannerImageFile" accept="image/*,.jpg,.jpeg,.png,.gif,.webp" class="hidden">
                         <span id="bannerImageFileName" class="file-info">No file chosen (using default banner)</span>
                     </div>
                 </div>
@@ -1335,11 +1335,11 @@
             if (skipCompression) {
                 return URL.createObjectURL(file);
             }
-            if (file.size > 2 * 1024 * 1024) {
-                addStatusMessage(`The image ${file.name} is too large (over 2MB) and was skipped.`, 'error');
+            if (file.size > 10 * 1024 * 1024) {
+                addStatusMessage(`The image ${file.name} is too large (over 10MB) and was skipped.`, 'error');
                 return null;
             }
-            const options = { maxSizeMB: 1, maxWidthOrHeight: 800, useWebWorker: false };
+            const options = { maxSizeMB: 5, maxWidthOrHeight: 1200, useWebWorker: false };
             try {
                 if (typeof imageCompression === 'undefined') {
                     console.warn('imageCompression library not loaded. Skipping compression.');
