@@ -538,10 +538,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     page.className = 'page';
                     if (backgroundUrl) page.style.backgroundImage = `url(${backgroundUrl})`;
                     
-                    // Create page wrapper
-                    const pageWrapper = document.createElement('div');
-                    pageWrapper.className = 'page-wrapper';
-                    
                     // Create overlay div
                     const overlay = document.createElement('div');
                     overlay.className = 'page-overlay';
@@ -599,15 +595,16 @@ document.addEventListener('DOMContentLoaded', () => {
                     const numProducts = pageProducts.length;
                     content.setAttribute('data-product-count', numProducts);
                     
-                    let cardHeight, cardWidth;
-                    if (numProducts === 1) { cardWidth = '60%'; cardHeight = '500px'; } 
-                    else if (numProducts === 2) { cardWidth = 'calc(50% - 5mm)'; cardHeight = '400px'; } 
-                    else if (numProducts === 3) { cardWidth = 'calc(33.333% - 7mm)'; cardHeight = '380px'; } 
-                    else if (numProducts === 4) { cardWidth = 'calc(50% - 5mm)'; cardHeight = '350px'; } 
-                    else if (numProducts <= 6) { cardWidth = 'calc(33.333% - 7mm)'; cardHeight = '300px'; } 
-                    else { cardWidth = 'calc(33.333% - 7mm)'; cardHeight = '160px'; }
+                        let cardHeight, cardWidth;
+                        const actualProductCount = Math.min(numProducts, 4); // Limit to max 4
+                        if (actualProductCount === 1) { cardWidth = '60%'; cardHeight = '500px'; } 
+                        else if (actualProductCount === 2) { cardWidth = 'calc(50% - 5mm)'; cardHeight = '400px'; } 
+                        else if (actualProductCount === 3) { cardWidth = 'calc(33.333% - 7mm)'; cardHeight = '380px'; } 
+                        else if (actualProductCount === 4) { cardWidth = 'calc(50% - 5mm)'; cardHeight = '350px'; }
 
-                    pageProducts.forEach(product => {
+                    // Limit to maximum 4 products per page
+                    const limitedPageProducts = pageProducts.slice(0, 4);
+                    limitedPageProducts.forEach(product => {
                         const card = document.createElement('div');
                         card.className = 'product-card';
                         
@@ -702,10 +699,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     `;
                     footer.innerHTML = footerMainContentHTML;
 
-                    pageWrapper.appendChild(header);
-                    pageWrapper.appendChild(content);
-                    pageWrapper.appendChild(footer);
-                    page.appendChild(pageWrapper);
+                    page.appendChild(header);
+                    page.appendChild(content);
+                    page.appendChild(footer);
                     previewArea.appendChild(page);
                 }
 

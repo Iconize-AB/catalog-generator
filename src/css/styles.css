@@ -7,7 +7,8 @@ body {
 /* A4 page style with background image */
 .page {
     width: 210mm;
-    height: 297mm;
+    height: 297mm; /* Fixed height to prevent footer from being pushed to the next page */
+    padding: 10mm 15mm;
     margin: 1rem auto;
     background-color: white;
     box-shadow: 0 0 10px rgba(0,0,0,0.1);
@@ -17,7 +18,7 @@ body {
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
-    overflow: hidden;
+    overflow: hidden; /* Prevent content overflow */
 }
 
 /* Page content wrapper */
@@ -60,21 +61,11 @@ body {
     pointer-events: none;
     z-index: 2;
 }
-.page-header {
-            flex-shrink: 0;
-            position: relative;
-            z-index: 10;
-            padding: 10mm 0;
-            margin: 0;
-        }
-        
-        .page-footer {
-            flex-shrink: 0;
-            position: relative;
-            z-index: 10;
-            padding: 4px 15mm;
-            margin-top: 5px;
-        }
+.page-header, .page-footer {
+    flex-shrink: 0;
+    position: relative;
+    z-index: 10;
+}
 
 .header-banner-container {
     position: absolute;
@@ -392,6 +383,7 @@ body {
         .origin-flag {
             position: absolute;
             top: 15px;
+            left: 15px;
             width: 40px;
             height: auto;
             border-radius: 2px;
@@ -430,10 +422,9 @@ body {
         print-color-adjust: exact !important;
     }
     
-    html, body {
+    body {
         background-color: white !important;
-        margin: 0 !important;
-        padding: 0 !important;
+        margin: 0;
     }
     
     .control-panel, .print-button-container {
@@ -444,33 +435,17 @@ body {
         padding: 0 !important;
         margin: 0 !important;
         overflow: visible !important;
-        transform: scale(1) !important;
+        transform: scale(1) !important; /* Reset zoom for printing */
     }
     
-            .page {
-                margin: 0 !important;
-                padding: 0 !important;
-                box-shadow: none !important;
-                border: none !important;
-                page-break-after: always;
-                page-break-inside: avoid;
-                height: 297mm !important;
-                width: 210mm !important;
-            }
-            
-            .page-wrapper {
-                padding: 0 !important;
-            }
-            
-            .page-content {
-                padding-left: 0 !important;
-                padding-right: 0 !important;
-            }
-            
-            .page-footer {
-                padding-left: 15mm !important;
-                padding-right: 15mm !important;
-            }
+    .page {
+        margin: 0;
+        box-shadow: none;
+        border: none;
+        page-break-after: always;
+        page-break-inside: avoid;
+        height: 297mm;
+    }
     
     .page:last-child {
         page-break-after: avoid;
@@ -483,7 +458,7 @@ body {
     
     @page {
         size: A4;
-        margin: 0 !important;
+        margin: 0;
     }
 }
 
