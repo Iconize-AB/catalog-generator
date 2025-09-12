@@ -113,6 +113,36 @@
             object-position: center;
             border-radius: 4px;
             transition: transform 0.2s ease;
+            margin-top: 8px;
+        }
+        
+        /* Smaller product images when 6+ products per page */
+        .page-content[data-product-count="6"] .product-image,
+        .page-content[data-product-count="7"] .product-image,
+        .page-content[data-product-count="8"] .product-image,
+        .page-content[data-product-count="9"] .product-image {
+            max-width: 60%;
+            max-height: 60%;
+            margin-top: 34px;
+        }
+        
+        /* Even smaller for 10+ products */
+        .page-content[data-product-count="10"] .product-image,
+        .page-content[data-product-count="11"] .product-image,
+        .page-content[data-product-count="12"] .product-image {
+            max-width: 50%;
+            max-height: 50%;
+        }
+        
+        /* Extra small for 15+ products */
+        .page-content[data-product-count="15"] .product-image,
+        .page-content[data-product-count="16"] .product-image,
+        .page-content[data-product-count="17"] .product-image,
+        .page-content[data-product-count="18"] .product-image,
+        .page-content[data-product-count="19"] .product-image,
+        .page-content[data-product-count="20"] .product-image {
+            max-width: 40%;
+            max-height: 40%;
         }
 
         .product-image-area {
@@ -1339,17 +1369,25 @@
                 addStatusMessage(`The image ${file.name} is too large (over 10MB) and was skipped.`, 'error');
                 return null;
             }
+            
+            // Check if file type is supported
+            const supportedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+            if (!supportedTypes.includes(file.type.toLowerCase())) {
+                addStatusMessage(`Unsupported file type for ${file.name}: ${file.type}. Skipping.`, 'error');
+                return null;
+            }
+            
             const options = { maxSizeMB: 5, maxWidthOrHeight: 1200, useWebWorker: false };
             try {
                 if (typeof imageCompression === 'undefined') {
-                    console.warn('imageCompression library not loaded. Skipping compression.');
+                    console.warn('imageCompression library not loaded. Using original file.');
                     return URL.createObjectURL(file);
                 }
                 const compressedFile = await imageCompression(file, options);
                 return URL.createObjectURL(compressedFile);
             } catch (error) {
                 console.error("Image compression error: ", error);
-                addStatusMessage(`Image compression failed for the file ${file.name}. Using the original file.`, 'warning');
+                addStatusMessage(`Image compression failed for ${file.name}. Using the original file.`, 'warning');
                 return URL.createObjectURL(file);
             }
         }
@@ -1388,23 +1426,43 @@
             clearStatus();
             addStatusMessage('Processing images...');
             
+            // Clear existing images
             Object.keys(targetObject).forEach(key => URL.revokeObjectURL(targetObject[key]));
             for (const key in targetObject) { delete targetObject[key]; }
 
             let processedCount = 0;
+            let failedCount = 0;
+            const failedFiles = [];
+            
             for (const file of files) {
                 try {
+                    addStatusMessage(`Processing ${file.name}...`, 'info');
                     const imageUrl = await handleImageUpload(file);
                     if (imageUrl) {
                         const fileName = file.name.split('.').slice(0, -1).join('.');
                         targetObject[fileName] = imageUrl;
                         processedCount++;
+                        addStatusMessage(`✓ ${file.name} processed successfully`, 'success');
+                    } else {
+                        failedCount++;
+                        failedFiles.push(file.name);
+                        addStatusMessage(`✗ ${file.name} failed to process`, 'error');
                     }
                 } catch (error) {
-                    addStatusMessage(`Failed to process the following file: ${file.name}`, 'error');
+                    failedCount++;
+                    failedFiles.push(file.name);
+                    addStatusMessage(`✗ Failed to process ${file.name}: ${error.message}`, 'error');
                 }
             }
-            addStatusMessage(`Images processed successfully: ${processedCount} out of ${files.length}`, 'success');
+            
+            // Final summary
+            if (processedCount > 0) {
+                addStatusMessage(`✓ Successfully processed ${processedCount} out of ${files.length} images`, 'success');
+            }
+            if (failedCount > 0) {
+                addStatusMessage(`✗ Failed to process ${failedCount} images: ${failedFiles.join(', ')}`, 'error');
+            }
+            
             renderPreview();
         }
 
@@ -1477,5 +1535,5 @@
         loadInitialPreview();
     });
     </script>
-</body>
-</html>
+  </body>
+  </html>
