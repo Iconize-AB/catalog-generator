@@ -321,7 +321,6 @@
             width: 20px;
             height: auto;
             border-radius: 2px;
-            box-shadow: 0 0 2px rgba(0,0,0,0.2);
         }
 
         /* Tab style */
@@ -756,6 +755,7 @@
             <div class="control-section">
                 <h2>Step 3: Customize Configuration</h2>
                 <input type="text" id="promoTime" placeholder="Promotion Date (e.g., May Special)" class="input-field" value="">
+                <input type="text" id="promoDate" placeholder="Date (e.g., 2025-09-18)" class="input-field mt-2" value="">
                 
                 <div class="mt-2">
                     <div class="flex border-b border-gray-200">
@@ -1007,6 +1007,7 @@
         const productImageAreaColorInput = document.getElementById('productImageAreaColor');
         const productsPerPageSelect = document.getElementById('productsPerPage');
         const promoTimeInput = document.getElementById('promoTime');
+        const promoDateInput = document.getElementById('promoDate');
         const promoTextInput = document.getElementById('promoText');
         const newArrivalsTextInput = document.getElementById('newArrivalsText');
         const footerTextInput = document.getElementById('footerText');
@@ -1308,9 +1309,13 @@
                             <div class="relative inline-block">
                                 <img src="${bannerImageSrc}" alt="Promotional Banner" style="max-height: 1200px; max-width: 300px; object-fit: contain;">
                                 <div class="absolute inset-0 flex items-center justify-center">
-                                    <div class="text-white font-bold text-center" style="font-size: 24px; font-family: 'Teko', sans-serif; text-transform: uppercase; letter-spacing: 1px;">
+                                    <div class="text-black font-bold text-center" style="font-size: 24px; font-family: 'Teko', sans-serif; text-transform: uppercase; letter-spacing: 1px;">
                                         ${promoText}
                                     </div>
+                                </div>
+                                <!-- Small date overlay in bottom right corner -->
+                                <div class="absolute bottom-2 right-2 text-black text-xs font-large opacity-80" style="font-size: 12px; font-weight: bold; margin-bottom: 10px;">
+                                    ${promoDateInput.value || new Date().toLocaleDateString('sv-SE')}
                                 </div>
                             </div>
                         `;
@@ -1655,6 +1660,7 @@
         setupImageInput('bannerImageFile', url => bannerImageUrl = url, 'banner image');
 
         promoTimeInput.addEventListener('input', debounce(renderPreview, 300));
+        promoDateInput.addEventListener('input', debounce(renderPreview, 300));
         promoTextInput.addEventListener('input', debounce(renderPreview, 300));
         newArrivalsTextInput.addEventListener('input', debounce(renderPreview, 300));
         footerTextInput.addEventListener('input', debounce(renderPreview, 300));
